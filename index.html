@@ -83,17 +83,15 @@
 
     <!-- CONTROL JAVASCRIPT -->
     <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbwn1DSwnwCR9h0EmFKm0GD2t7VKnHmI-jP-tExoH9ARvyB8PnWg85Oy8AS3ZqlUp36kzA/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbw8Ubb2DIqSJhuXssJ08THQMh639BeCbCtvN-XDKF3-oVpidzB_pg2LpX5GCj0vdUMxVg/exec';
 
-        async function intentarLogin() {
+        function intentarLogin() {
             let pass = document.getElementById('txtPassword').value;
-            try {
-                let response = await fetch(`${API_URL}?action=login&pass=${encodeURIComponent(pass)}`, {
-                    method: 'GET',
-                    redirect: 'follow'
-                });
-                let textData = await response.text();
-                let data = JSON.parse(textData);
+            let scriptId = "jsonpLoginScript";
+            let oldScript = document.getElementById(scriptId);
+            if (oldScript) oldScript.remove();
+
+            window.manejarLogin = function(data) {
                 if (data.success) {
                     document.getElementById('loginSection').classList.add('hidden');
                     document.getElementById('appSection').classList.remove('hidden');
@@ -101,7 +99,12 @@
                 } else {
                     document.getElementById('errorLogin').classList.remove('hidden');
                 }
-            } catch(e) {
+            };
+
+            let script = document.createElement('script');
+            script.id = scriptId;
+            script.src = `${API_URL}?action=login&pass=${encodeURIComponent(pass)}&callback=manejarLogin`;
+            script.onerror = function() {
                 if (pass === "SARE1523") {
                     document.getElementById('loginSection').classList.add('hidden');
                     document.getElementById('appSection').classList.remove('hidden');
@@ -109,7 +112,8 @@
                 } else {
                     document.getElementById('errorLogin').classList.remove('hidden');
                 }
-            }
+            };
+            document.body.appendChild(script);
         }
 
         function cerrarSesion() {
@@ -122,23 +126,12 @@
             procesarCurp(curp);
         }
 
-        async function procesarCurp(curp) {
-            try {
-                let response = await fetch(`${API_URL}?action=buscarCurp&curp=${encodeURIComponent(curp)}`, {
-                    method: 'GET',
-                    redirect: 'follow'
-                });
-                let textData = await response.text();
-                console.log("Respuesta cruda de la API:", textData); // <--- Esto te dirá qué responde exactamente Google
-                
-                let res;
-                try {
-                    res = JSON.parse(textData);
-                } catch (err) {
-                    alert("Error: La API no devolvió un JSON válido. Revisa la consola (F12).");
-                    return;
-                }
+        function procesarCurp(curp) {
+            let scriptId = "jsonpCurpScript";
+            let oldScript = document.getElementById(scriptId);
+            if (oldScript) oldScript.remove();
 
+            window.manejarRespuesta = function(res) {
                 if (res.encontrado) {
                     document.getElementById('resFolio').innerText = res.folio;
                     document.getElementById('resCurp').innerText = res.curp;
@@ -156,10 +149,15 @@
                     document.getElementById('notFoundSection').classList.remove('hidden');
                     document.getElementById('resultCard').classList.add('hidden');
                 }
-            } catch(e) {
-                console.error("Detalle del error:", e);
-                alert("Error al buscar el CURP en la API: " + e.message);
-            }
+            };
+
+            let script = document.createElement('script');
+            script.id = scriptId;
+            script.src = `${API_URL}?action=buscarCurp&curp=${encodeURIComponent(curp)}&callback=manejarRespuesta`;
+            script.onerror = function() {
+                alert("Error de conexión con la API.");
+            };
+            document.body.appendChild(script);
         }
 
         function capturarNuevo() {
@@ -175,18 +173,16 @@
             document.getElementById('nameSearchSection').classList.remove('hidden');
         }
 
-        async function ejecutarBusquedaNombre() {
+        function ejecutarBusquedaNombre() {
             let termino = document.getElementById('txtNombre').value;
-            try {
-                let response = await fetch(`${API_URL}?action=buscarNombre&nombre=${encodeURIComponent(termino)}`, {
-                    method: 'GET',
-                    redirect: 'follow'
-                });
-                let textData = await response.text();
-                let lista = JSON.parse(textData);
+            let scriptId = "jsonpNombreScript";
+            let oldScript = document.getElementById(scriptId);
+            if (oldScript) oldScript.remove();
+
+            window.manejarNombre = function(lista) {
                 let contenedor = document.getElementById('nameResultsList');
                 contenedor.innerHTML = "";
-                if (lista.length === 0) {
+                if (!lista || lista.length === 0) {
                     contenedor.innerHTML = "<p class='text-slate-400'>No se encontraron registros.</p>";
                     return;
                 }
@@ -196,9 +192,15 @@
                     div.innerHTML = `<span><strong>${item.nombre}</strong></span> <button onclick="procesarCurp('${item.curp}')" class='bg-[#6B1D2F] text-white px-2 py-1 rounded text-[10px]'>Seleccionar</button>`;
                     contenedor.appendChild(div);
                 });
-            } catch(e) {
+            };
+
+            let script = document.createElement('script');
+            script.id = scriptId;
+            script.src = `${API_URL}?action=buscarNombre&nombre=${encodeURIComponent(termino)}&callback=manejarNombre`;
+            script.onerror = function() {
                 alert("Error en la búsqueda por nombre.");
-            }
+            };
+            document.body.appendChild(script);
         }
     </script>
 </body>
