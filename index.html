@@ -129,11 +129,13 @@
                     redirect: 'follow'
                 });
                 let textData = await response.text();
+                console.log("Respuesta cruda de la API:", textData); // <--- Esto te dirá qué responde exactamente Google
+                
                 let res;
                 try {
                     res = JSON.parse(textData);
                 } catch (err) {
-                    alert("Error de formato en la respuesta de la API.");
+                    alert("Error: La API no devolvió un JSON válido. Revisa la consola (F12).");
                     return;
                 }
 
@@ -155,7 +157,8 @@
                     document.getElementById('resultCard').classList.add('hidden');
                 }
             } catch(e) {
-                alert("Error al buscar el CURP en la API.");
+                console.error("Detalle del error:", e);
+                alert("Error al buscar el CURP en la API: " + e.message);
             }
         }
 
