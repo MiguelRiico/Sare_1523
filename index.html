@@ -9,27 +9,28 @@
 </head>
 <body class="bg-slate-100 font-sans min-h-screen flex flex-col justify-between">
 
-    <!-- HEADER CON VERSIÓN 2.3 -->
+    <!-- HEADER -->
     <header class="bg-[#6B1D2F] text-white shadow-md p-4 flex justify-between items-center">
         <div class="flex items-center space-x-3">
             <div class="bg-white px-2 py-1 rounded text-xs font-bold text-[#6B1D2F]">GOBIERNO DE MÉXICO</div>
             <div>
                 <h1 class="text-sm font-semibold tracking-wide">Servidor Educativo - SARE 1523</h1>
-                <p class="text-[10px] text-amber-300 font-mono">Versión 2.3 (Acceso Directo)</p>
+                <p class="text-[10px] text-amber-300 font-mono">Versión 3.0 (JSON Local - Ultra Rápido)</p>
             </div>
         </div>
     </header>
 
-    <!-- CONTENIDO (DIRECTO A LA APP) -->
+    <!-- CONTENIDO -->
     <main class="container mx-auto p-4 max-w-md flex-grow">
         <section id="appSection" class="space-y-4 mt-2">
             <div class="bg-white p-5 rounded-xl shadow-md space-y-3">
                 <h3 class="text-sm font-bold text-slate-700">Consulta por CURP</h3>
-                <p class="text-xs text-slate-500">Escriba, pegue, escanee o dicte el CURP:</p>
+                <p id="statusCarga" class="text-xs text-amber-600 font-semibold">⏳ Cargando padrón en el dispositivo...</p>
+                
                 <div class="flex space-x-2">
-                    <input type="text" id="txtCurpInput" placeholder="Ingrese CURP..." maxlength="18" class="w-full px-3 py-2 border rounded-lg text-sm uppercase font-mono outline-none focus:ring-2 focus:ring-[#6B1D2F]">
+                    <input type="text" id="txtCurpInput" placeholder="Ingrese CURP..." maxlength="18" disabled class="w-full px-3 py-2 border rounded-lg text-sm uppercase font-mono outline-none focus:ring-2 focus:ring-[#6B1D2F] bg-slate-50">
                     <button onclick="limpiarCampo()" class="bg-slate-300 hover:bg-slate-400 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold">Limpiar</button>
-                    <button onclick="consultarCurpManual()" class="bg-[#6B1D2F] hover:bg-[#521321] text-white px-4 py-2 rounded-lg text-xs font-medium">Buscar</button>
+                    <button id="btnBuscar" onclick="consultarCurpManual()" disabled class="bg-[#6B1D2F] opacity-50 text-white px-4 py-2 rounded-lg text-xs font-medium">Buscar</button>
                 </div>
                 
                 <button onclick="iniciarEscaner()" class="w-full bg-amber-600 hover:bg-amber-700 text-white py-2 rounded-lg text-xs font-medium flex items-center justify-center space-x-2">
@@ -43,7 +44,7 @@
             <!-- CONSOLA DE DEPURACIÓN -->
             <div id="debugBox" class="bg-slate-900 text-green-400 p-3 rounded-xl font-mono text-[10px] hidden space-y-1">
                 <p class="text-amber-400 font-bold border-b border-slate-700 pb-1">🔍 Consola de Depuración:</p>
-                <p id="debugText">Esperando consulta...</p>
+                <p id="debugText">Listo para buscar...</p>
             </div>
 
             <!-- TARJETA DE RESULTADO -->
@@ -66,15 +67,6 @@
             <div id="notFoundSection" class="bg-white p-5 rounded-xl shadow-md hidden text-center space-y-3">
                 <p class="text-red-600 font-bold text-sm">NO ENCONTRADO</p>
                 <p class="text-xs text-slate-500">El CURP ingresado no coincide con el padrón.</p>
-                <button onclick="mostrarBusquedaNombre()" class="w-full bg-amber-600 hover:bg-amber-700 text-white py-2 rounded-lg text-xs font-medium">Intentar buscar por nombre</button>
-            </div>
-
-            <!-- BÚSQUEDA POR NOMBRE -->
-            <div id="nameSearchSection" class="bg-white p-4 rounded-xl shadow-md hidden space-y-3">
-                <h3 class="text-xs font-bold text-slate-600 uppercase">Buscar por Nombre o Apellido</h3>
-                <input type="text" id="txtNombre" placeholder="Escriba nombre o apellido..." class="w-full px-3 py-2 border rounded-lg text-xs outline-none">
-                <button onclick="ejecutarBusquedaNombre()" class="w-full bg-slate-700 text-white py-2 rounded-lg text-xs">Buscar</button>
-                <div id="nameResultsList" class="space-y-2 mt-2 max-h-40 overflow-y-auto text-xs"></div>
             </div>
         </section>
     </main>
@@ -84,10 +76,32 @@
         Coordinación Nacional de Becas para el Bienestar Benito Juárez
     </footer>
 
-    <!-- CONTROL JAVASCRIPT -->
+    <!-- CONTROL JAVASCRIPT LOCAL -->
     <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzEMasbXWRxWEwiNigUX9Ec5o-_XcAAFFrIq2T-11408bafP0hwL9x_ikvQbfkaSFWIkg/exec';
+        let padronGlobal = [];
         let html5QrCode = null;
+
+        // Cargar el archivo JSON local al abrir la página (asegúrate de que el archivo en GitHub se llame padron.json o ajusta el nombre aquí)
+        window.onload = function() {
+            mostrarDebug("Cargando padron.json local...");
+            fetch('padron.json')
+                .then(response => response.json())
+                .then(data => {
+                    padronGlobal = data;
+                    document.getElementById('statusCarga').innerText = `✅ Padrón listo (${padronGlobal.length} registros)`;
+                    document.getElementById('statusCarga').className = "text-xs text-green-600 font-semibold";
+                    document.getElementById('txtCurpInput').disabled = false;
+                    document.getElementById('txtCurpInput').classList.remove('bg-slate-50');
+                    document.getElementById('btnBuscar').disabled = false;
+                    document.getElementById('btnBuscar').classList.remove('opacity-50');
+                    mostrarDebug("Padrón cargado correctamente en memoria.");
+                })
+                .catch(err => {
+                    document.getElementById('statusCarga').innerText = "❌ Error al cargar padron.json";
+                    document.getElementById('statusCarga').className = "text-xs text-red-600 font-semibold";
+                    mostrarDebug("Error al cargar el archivo JSON: " + err);
+                });
+        };
 
         function mostrarDebug(mensaje) {
             let caja = document.getElementById('debugBox');
@@ -111,10 +125,7 @@
 
             html5QrCode.start(
                 { facingMode: "environment" },
-                {
-                    fps: 15,
-                    qrbox: { width: 280, height: 120 }
-                },
+                { fps: 15, qrbox: { width: 280, height: 120 } },
                 (decodedText, decodedResult) => {
                     let textoDetectado = decodedText.trim().toUpperCase();
                     if (textoDetectado.length >= 16) {
@@ -143,92 +154,60 @@
         }
 
         function consultarCurpManual() {
-            let curp = document.getElementById('txtCurpInput').value.trim().toUpperCase();
-            if(!curp) return;
-            if(curp.length > 18) curp = curp.substring(0, 18);
-            document.getElementById('txtCurpInput').value = curp;
-            procesarCurp(curp);
-        }
+            let curpBuscado = document.getElementById('txtCurpInput').value.trim().toUpperCase();
+            if(!curpBuscado) return;
+            if(curpBuscado.length > 18) curpBuscado = curpBuscado.substring(0, 18);
+            document.getElementById('txtCurpInput').value = curpBuscado;
 
-        function procesarCurp(curp) {
-            mostrarDebug(`Enviando consulta JSONP para CURP: [${curp}]...`);
+            mostrarDebug(`Buscando localmente: [${curpBuscado}]...`);
 
-            let scriptId = "jsonpCurpScript";
-            let oldScript = document.getElementById(scriptId);
-            if (oldScript) oldScript.remove();
+            let encontrado = null;
 
-            window.manejarRespuesta = function(res) {
-                mostrarDebug(`Respuesta recibida: ${JSON.stringify(res)}`);
-                if (res.encontrado) {
-                    document.getElementById('resFolio').innerText = res.folio;
-                    document.getElementById('resCurp').innerText = res.curp;
-                    document.getElementById('resNombre').innerText = res.nombre;
-                    document.getElementById('resMunicipio').innerText = res.municipio;
-                    document.getElementById('resCct').innerText = res.cct;
-                    document.getElementById('resPrograma').innerText = res.programa;
-                    document.getElementById('resEstatus').innerText = res.estatus;
-                    document.getElementById('resVigencia').innerText = res.vigencia;
-
-                    document.getElementById('resultCard').classList.remove('hidden');
-                    document.getElementById('notFoundSection').classList.add('hidden');
-                    document.getElementById('nameSearchSection').classList.add('hidden');
-                } else {
-                    document.getElementById('notFoundSection').classList.remove('hidden');
-                    document.getElementById('resultCard').classList.add('hidden');
+            for (let i = 0; i < padronGlobal.length; i++) {
+                let fila = padronGlobal[i];
+                let valoresFila = Object.values(fila).join(" ").toUpperCase();
+                
+                if (valoresFila.includes(curpBuscado)) {
+                    let keys = Object.keys(fila);
+                    encontrado = {
+                        folio: fila[keys[0]] || "N/A",
+                        municipio: fila[keys[3]] || "N/A",
+                        cct: fila[keys[5]] || "N/A",
+                        curp: curpBuscado,
+                        nombre: fila[keys[12]] || "N/A",
+                        programa: fila[keys[14]] || "N/A",
+                        estatus: fila[keys[15]] || "N/A",
+                        vigencia: fila[keys[16]] || "N/A"
+                    };
+                    break;
                 }
-            };
+            }
 
-            let script = document.createElement('script');
-            script.id = scriptId;
-            script.src = `${API_URL}?action=buscarCurp&curp=${encodeURIComponent(curp)}&callback=manejarRespuesta`;
-            script.onerror = function() {
-                mostrarDebug("❌ Error crítico: La API no respondió.");
-                alert("Error de conexión con la API.");
-            };
-            document.body.appendChild(script);
+            if (encontrado) {
+                mostrarDebug("¡Registro encontrado de forma local!");
+                document.getElementById('resFolio').innerText = encontrado.folio;
+                document.getElementById('resCurp').innerText = encontrado.curp;
+                document.getElementById('resNombre').innerText = encontrado.nombre;
+                document.getElementById('resMunicipio').innerText = encontrado.municipio;
+                document.getElementById('resCct').innerText = encontrado.cct;
+                document.getElementById('resPrograma').innerText = encontrado.programa;
+                document.getElementById('resEstatus').innerText = encontrado.estatus;
+                document.getElementById('resVigencia').innerText = encontrado.vigencia;
+
+                document.getElementById('resultCard').classList.remove('hidden');
+                document.getElementById('notFoundSection').classList.add('hidden');
+            } else {
+                mostrarDebug("No se encontró coincidencia.");
+                document.getElementById('notFoundSection').classList.remove('hidden');
+                document.getElementById('resultCard').classList.add('hidden');
+            }
         }
 
         function capturarNuevo() {
             document.getElementById('resultCard').classList.add('hidden');
             document.getElementById('notFoundSection').classList.add('hidden');
-            document.getElementById('nameSearchSection').classList.add('hidden');
             document.getElementById('txtCurpInput').value = "";
             document.getElementById('txtCurpInput').focus();
-        }
-
-        function mostrarBusquedaNombre() {
-            document.getElementById('notFoundSection').classList.add('hidden');
-            document.getElementById('nameSearchSection').classList.remove('hidden');
-        }
-
-        function ejecutarBusquedaNombre() {
-            let termino = document.getElementById('txtNombre').value;
-            let scriptId = "jsonpNombreScript";
-            let oldScript = document.getElementById(scriptId);
-            if (oldScript) oldScript.remove();
-
-            window.manejarNombre = function(lista) {
-                let contenedor = document.getElementById('nameResultsList');
-                contenedor.innerHTML = "";
-                if (!lista || lista.length === 0) {
-                    contenedor.innerHTML = "<p class='text-slate-400'>No se encontraron registros.</p>";
-                    return;
-                }
-                lista.forEach(item => {
-                    let div = document.createElement('div');
-                    div.className = "p-2 bg-slate-50 border rounded flex justify-between items-center";
-                    div.innerHTML = `<span><strong>${item.nombre}</strong></span> <button onclick="procesarCurp('${item.curp}')" class='bg-[#6B1D2F] text-white px-2 py-1 rounded text-[10px]'>Seleccionar</button>`;
-                    contenedor.appendChild(div);
-                });
-            };
-
-            let script = document.createElement('script');
-            script.id = scriptId;
-            script.src = `${API_URL}?action=buscarNombre&nombre=${encodeURIComponent(termino)}&callback=manejarNombre`;
-            script.onerror = function() {
-                alert("Error en la búsqueda por nombre.");
-            };
-            document.body.appendChild(script);
         }
     </script>
 </body>
