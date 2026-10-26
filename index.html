@@ -5,34 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema Institucional - BRC</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Librería para el escáner de códigos de barras / QR por cámara -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body class="bg-slate-100 font-sans min-h-screen flex flex-col justify-between">
 
-    <!-- HEADER CON VERSIÓN 1.4 -->
+    <!-- HEADER CON VERSIÓN 1.7 -->
     <header class="bg-[#6B1D2F] text-white shadow-md p-4 flex justify-between items-center">
         <div class="flex items-center space-x-3">
             <div class="bg-white px-2 py-1 rounded text-xs font-bold text-[#6B1D2F]">GOBIERNO DE MÉXICO</div>
             <div>
                 <h1 class="text-sm font-semibold tracking-wide">Servidor Educativo - SARE 1523</h1>
-                <p class="text-[10px] text-amber-300 font-mono">Versión 1.5 (Con Depuración)</p>
+                <p class="text-[10px] text-amber-300 font-mono">Versión 1.7 (Con Login y Escáner)</p>
             </div>
         </div>
+        <button id="btnLogout" onclick="cerrarSesion()" class="hidden text-xs bg-amber-600 hover:bg-amber-700 px-3 py-1 rounded font-medium">Salir</button>
     </header>
 
     <!-- CONTENIDO -->
     <main class="container mx-auto p-4 max-w-md flex-grow">
-        <section id="appSection" class="space-y-4 mt-4">
+        <!-- LOGIN -->
+        <section id="loginSection" class="bg-white p-6 rounded-xl shadow-lg mt-10">
+            <div class="text-center mb-6">
+                <h2 class="text-xl font-bold text-[#6B1D2F]">Acceso al Sistema</h2>
+                <p class="text-xs text-slate-500 mt-1">Ingrese su contraseña institucional</p>
+            </div>
+            <div class="space-y-4">
+                <input type="password" id="txtPassword" placeholder="Contraseña" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6B1D2F] outline-none text-sm">
+                <button onclick="intentarLogin()" class="w-full bg-[#6B1D2F] hover:bg-[#521321] text-white py-2 rounded-lg font-medium text-sm transition">Ingresar</button>
+                <p id="errorLogin" class="text-red-500 text-xs text-center hidden">Contraseña incorrecta</p>
+            </div>
+        </section>
+
+        <!-- APLICACIÓN PRINCIPAL -->
+        <section id="appSection" class="hidden space-y-4 mt-4">
             <div class="bg-white p-5 rounded-xl shadow-md space-y-3">
                 <h3 class="text-sm font-bold text-slate-700">Consulta por CURP</h3>
-                <p class="text-xs text-slate-500">Escriba, pegue o use el dictado de voz:</p>
+                <p class="text-xs text-slate-500">Escriba, pegue, escanee o dicte el CURP:</p>
                 <div class="flex space-x-2">
                     <input type="text" id="txtCurpInput" placeholder="Ingrese CURP..." class="w-full px-3 py-2 border rounded-lg text-sm uppercase font-mono outline-none focus:ring-2 focus:ring-[#6B1D2F]">
                     <button onclick="limpiarCampo()" class="bg-slate-300 hover:bg-slate-400 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold">Limpiar</button>
                     <button onclick="consultarCurpManual()" class="bg-[#6B1D2F] hover:bg-[#521321] text-white px-4 py-2 rounded-lg text-xs font-medium">Buscar</button>
                 </div>
+                
+                <!-- BOTÓN PARA ABRIR EL ESCÁNER DE CÁMARA -->
+                <button onclick="iniciarEscaner()" class="w-full bg-amber-600 hover:bg-amber-700 text-white py-2 rounded-lg text-xs font-medium flex items-center justify-center space-x-2">
+                    <span>📷 Escanear con Cámara</span>
+                </button>
+                
+                <!-- CONTENEDOR DE LA CÁMARA -->
+                <div id="reader" class="hidden w-full overflow-hidden rounded-lg border mt-2"></div>
+                <button id="btnCloseScanner" onclick="detenerEscaner()" class="w-full bg-slate-500 text-white py-1 rounded-lg text-xs hidden mt-2">Cerrar Cámara</button>
             </div>
 
-            <!-- CONSOLA DE DEPURACIÓN (Muestra qué está pasando) -->
+            <!-- CONSOLA DE DEPURACIÓN -->
             <div id="debugBox" class="bg-slate-900 text-green-400 p-3 rounded-xl font-mono text-[10px] hidden space-y-1">
                 <p class="text-amber-400 font-bold border-b border-slate-700 pb-1">🔍 Consola de Depuración:</p>
                 <p id="debugText">Esperando consulta...</p>
@@ -78,7 +104,8 @@
 
     <!-- CONTROL JAVASCRIPT -->
     <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzLA5frT19CQ-rnCx_RxjNNMAL_5CHd-VwYgsjTtPYD8rdL47xUZZLgcArYlStUhovm7g/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxvp6PTny30L0TAL9tcM5qhDI0xwSH-tiD_Q5NtFUQwn20VtLIq6vv3iKj_xx25uuWwVg/exec';
+        let html5QrCode = null;
 
         function mostrarDebug(mensaje) {
             let caja = document.getElementById('debugBox');
@@ -87,9 +114,91 @@
             texto.innerText = mensaje;
         }
 
+        function intentarLogin() {
+            let pass = document.getElementById('txtPassword').value;
+            let scriptId = "jsonpLoginScript";
+            let oldScript = document.getElementById(scriptId);
+            if (oldScript) oldScript.remove();
+
+            window.manejarLogin = function(data) {
+                if (data.success) {
+                    document.getElementById('loginSection').classList.add('hidden');
+                    document.getElementById('appSection').classList.remove('hidden');
+                    document.getElementById('btnLogout').classList.remove('hidden');
+                } else {
+                    document.getElementById('errorLogin').classList.remove('hidden');
+                }
+            };
+
+            let script = document.createElement('script');
+            script.id = scriptId;
+            script.src = `${API_URL}?action=login&pass=${encodeURIComponent(pass)}&callback=manejarLogin`;
+            script.onerror = function() {
+                if (pass === "SARE1523") {
+                    document.getElementById('loginSection').classList.add('hidden');
+                    document.getElementById('appSection').classList.remove('hidden');
+                    document.getElementById('btnLogout').classList.remove('hidden');
+                } else {
+                    document.getElementById('errorLogin').classList.remove('hidden');
+                }
+            };
+            document.body.appendChild(script);
+        }
+
+        function cerrarSesion() {
+            location.reload();
+        }
+
         function limpiarCampo() {
             document.getElementById('txtCurpInput').value = "";
             document.getElementById('txtCurpInput').focus();
+        }
+
+        // CONTROL DE CÁMARA / ESCÁNER
+        function iniciarEscaner() {
+            document.getElementById('reader').classList.remove('hidden');
+            document.getElementById('btnCloseScanner').classList.remove('hidden');
+
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode("reader");
+            }
+
+            html5QrCode.start(
+                { facingMode: "environment" },
+                {
+                    fps: 15,
+                    qrbox: { width: 280, height: 120 }
+                },
+                (decodedText, decodedResult) => {
+                    let textoDetectado = decodedText.trim().toUpperCase();
+                    // Si detecta un texto largo que parece CURP (18 caracteres)
+                    if (textoDetectado.length >= 16) {
+                        document.getElementById('txtCurpInput').value = textoDetectado;
+                        detenerEscaner();
+                        consultarCurpManual();
+                    }
+                },
+                (errorMessage) => {
+                    // Ignora errores de fotogramas vacíos
+                }
+            ).catch(err => {
+                alert("No se pudo iniciar la cámara. Verifique los permisos en su navegador.");
+                detenerEscaner();
+            });
+        }
+
+        function detenerEscaner() {
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => {
+                    document.getElementById('reader').classList.add('hidden');
+                    document.getElementById('btnCloseScanner').classList.add('hidden');
+                }).catch(err => {
+                    console.error("Error al detener", err);
+                });
+            } else {
+                document.getElementById('reader').classList.add('hidden');
+                document.getElementById('btnCloseScanner').classList.add('hidden');
+            }
         }
 
         function consultarCurpManual() {
@@ -130,7 +239,7 @@
             script.id = scriptId;
             script.src = `${API_URL}?action=buscarCurp&curp=${encodeURIComponent(curp)}&callback=manejarRespuesta`;
             script.onerror = function() {
-                mostrarDebug("❌ Error crítico: La API no respondió o bloqueó la conexión (Error de red/CORS).");
+                mostrarDebug("❌ Error crítico: La API no respondió.");
                 alert("Error de conexión con la API.");
             };
             document.body.appendChild(script);
