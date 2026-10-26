@@ -8,18 +8,18 @@
 </head>
 <body class="bg-slate-100 font-sans min-h-screen flex flex-col justify-between">
 
-    <!-- HEADER CON VERSIÓN 1.3 -->
+    <!-- HEADER CON VERSIÓN 1.4 -->
     <header class="bg-[#6B1D2F] text-white shadow-md p-4 flex justify-between items-center">
         <div class="flex items-center space-x-3">
             <div class="bg-white px-2 py-1 rounded text-xs font-bold text-[#6B1D2F]">GOBIERNO DE MÉXICO</div>
             <div>
                 <h1 class="text-sm font-semibold tracking-wide">Servidor Educativo - SARE 1523</h1>
-                <p class="text-[10px] text-amber-300 font-mono">Versión 1.3 (API Actualizada)</p>
+                <p class="text-[10px] text-amber-300 font-mono">Versión 1.4 (Con Depuración)</p>
             </div>
         </div>
     </header>
 
-    <!-- CONTENIDO (ENTRADA DIRECTA) -->
+    <!-- CONTENIDO -->
     <main class="container mx-auto p-4 max-w-md flex-grow">
         <section id="appSection" class="space-y-4 mt-4">
             <div class="bg-white p-5 rounded-xl shadow-md space-y-3">
@@ -30,7 +30,12 @@
                     <button onclick="limpiarCampo()" class="bg-slate-300 hover:bg-slate-400 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold">Limpiar</button>
                     <button onclick="consultarCurpManual()" class="bg-[#6B1D2F] hover:bg-[#521321] text-white px-4 py-2 rounded-lg text-xs font-medium">Buscar</button>
                 </div>
-                <p class="text-[10px] text-slate-400 italic">💡 Consejo: Use el micrófono del teclado de su celular para dictar la CURP rápidamente.</p>
+            </div>
+
+            <!-- CONSOLA DE DEPURACIÓN (Muestra qué está pasando) -->
+            <div id="debugBox" class="bg-slate-900 text-green-400 p-3 rounded-xl font-mono text-[10px] hidden space-y-1">
+                <p class="text-amber-400 font-bold border-b border-slate-700 pb-1">🔍 Consola de Depuración:</p>
+                <p id="debugText">Esperando consulta...</p>
             </div>
 
             <!-- TARJETA DE RESULTADO -->
@@ -73,8 +78,14 @@
 
     <!-- CONTROL JAVASCRIPT -->
     <script>
-        // URL NUEVA DE LA API ACTUALIZADA
         const API_URL = 'https://script.google.com/macros/s/AKfycbxvp6PTny30L0TAL9tcM5qhDI0xwSH-tiD_Q5NtFUQwn20VtLIq6vv3iKj_xx25uuWwVg/exec';
+
+        function mostrarDebug(mensaje) {
+            let caja = document.getElementById('debugBox');
+            let texto = document.getElementById('debugText');
+            caja.classList.remove('hidden');
+            texto.innerText = mensaje;
+        }
 
         function limpiarCampo() {
             document.getElementById('txtCurpInput').value = "";
@@ -88,11 +99,14 @@
         }
 
         function procesarCurp(curp) {
+            mostrarDebug(`Enviando consulta para CURP: [${curp}]...`);
+
             let scriptId = "jsonpCurpScript";
             let oldScript = document.getElementById(scriptId);
             if (oldScript) oldScript.remove();
 
             window.manejarRespuesta = function(res) {
+                mostrarDebug(`Respuesta recibida: ${JSON.stringify(res)}`);
                 if (res.encontrado) {
                     document.getElementById('resFolio').innerText = res.folio;
                     document.getElementById('resCurp').innerText = res.curp;
@@ -116,6 +130,7 @@
             script.id = scriptId;
             script.src = `${API_URL}?action=buscarCurp&curp=${encodeURIComponent(curp)}&callback=manejarRespuesta`;
             script.onerror = function() {
+                mostrarDebug("❌ Error crítico: La API no respondió o bloqueó la conexión (Error de red/CORS).");
                 alert("Error de conexión con la API.");
             };
             document.body.appendChild(script);
