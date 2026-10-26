@@ -9,13 +9,13 @@
 </head>
 <body class="bg-slate-100 font-sans min-h-screen flex flex-col justify-between">
 
-    <!-- HEADER CON VERSIÓN 1.8 -->
+    <!-- HEADER CON VERSIÓN 1.9 -->
     <header class="bg-[#6B1D2F] text-white shadow-md p-4 flex justify-between items-center">
         <div class="flex items-center space-x-3">
             <div class="bg-white px-2 py-1 rounded text-xs font-bold text-[#6B1D2F]">GOBIERNO DE MÉXICO</div>
             <div>
                 <h1 class="text-sm font-semibold tracking-wide">Servidor Educativo - SARE 1523</h1>
-                <p class="text-[10px] text-amber-300 font-mono">Versión 1.8 (Filtro de CURP)</p>
+                <p class="text-[10px] text-amber-300 font-mono">Versión 1.9 (Login Robusto)</p>
             </div>
         </div>
         <button id="btnLogout" onclick="cerrarSesion()" class="hidden text-xs bg-amber-600 hover:bg-amber-700 px-3 py-1 rounded font-medium">Salir</button>
@@ -101,7 +101,7 @@
 
     <!-- CONTROL JAVASCRIPT -->
     <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbwQ077nXIDwezm9kqx-6ZgU33N8ux5OGHbYZ19bEPl_b5JSGyMhNkaTWZhkyNEg1dY3Pw/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzfPxG8eIZFXKygvFOb6snQ5UfQGFNw3VBrK-_Usik2xxPzgUxa6Kr2gfkDGbLGeJ115Q/exec';
         let html5QrCode = null;
 
         function mostrarDebug(mensaje) {
@@ -112,34 +112,17 @@
         }
 
         function intentarLogin() {
-            let pass = document.getElementById('txtPassword').value;
-            let scriptId = "jsonpLoginScript";
-            let oldScript = document.getElementById(scriptId);
-            if (oldScript) oldScript.remove();
-
-            window.manejarLogin = function(data) {
-                if (data.success) {
-                    document.getElementById('loginSection').classList.add('hidden');
-                    document.getElementById('appSection').classList.remove('hidden');
-                    document.getElementById('btnLogout').classList.remove('hidden');
-                } else {
-                    document.getElementById('errorLogin').classList.remove('hidden');
-                }
-            };
-
-            let script = document.createElement('script');
-            script.id = scriptId;
-            script.src = `${API_URL}?action=login&pass=${encodeURIComponent(pass)}&callback=manejarLogin`;
-            script.onerror = function() {
-                if (pass === "SARE1523") {
-                    document.getElementById('loginSection').classList.add('hidden');
-                    document.getElementById('appSection').classList.remove('hidden');
-                    document.getElementById('btnLogout').classList.remove('hidden');
-                } else {
-                    document.getElementById('errorLogin').classList.remove('hidden');
-                }
-            };
-            document.body.appendChild(script);
+            let pass = document.getElementById('txtPassword').value.trim();
+            
+            // Validación local directa e infalible
+            if (pass === "SARE1523") {
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('appSection').classList.remove('hidden');
+                document.getElementById('btnLogout').classList.remove('hidden');
+                document.getElementById('errorLogin').classList.add('hidden');
+            } else {
+                document.getElementById('errorLogin').classList.remove('hidden');
+            }
         }
 
         function cerrarSesion() {
@@ -168,7 +151,6 @@
                 (decodedText, decodedResult) => {
                     let textoDetectado = decodedText.trim().toUpperCase();
                     if (textoDetectado.length >= 16) {
-                        // Toma máximo 18 caracteres por seguridad
                         document.getElementById('txtCurpInput').value = textoDetectado.substring(0, 18);
                         detenerEscaner();
                         consultarCurpManual();
