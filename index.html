@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema Institucional - BRC</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Librería para el escáner de códigos de barras / QR -->
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body class="bg-slate-100 font-sans min-h-screen flex flex-col justify-between">
 
@@ -38,19 +36,13 @@
         <section id="appSection" class="hidden space-y-4">
             <div class="bg-white p-5 rounded-xl shadow-md space-y-3">
                 <h3 class="text-sm font-bold text-slate-700">Consulta por CURP</h3>
-                <p class="text-xs text-slate-500">Escriba, pegue o escanee el CURP:</p>
+                <p class="text-xs text-slate-500">Escriba, pegue o use el dictado de voz:</p>
                 <div class="flex space-x-2">
                     <input type="text" id="txtCurpInput" placeholder="Ingrese CURP..." class="w-full px-3 py-2 border rounded-lg text-sm uppercase font-mono outline-none focus:ring-2 focus:ring-[#6B1D2F]">
-                    <button onclick="consultarCurpManual()" class="bg-[#6B1D2F] text-white px-4 py-2 rounded-lg text-xs font-medium">Buscar</button>
+                    <button onclick="limpiarCampo()" class="bg-slate-300 hover:bg-slate-400 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold">Limpiar</button>
+                    <button onclick="consultarCurpManual()" class="bg-[#6B1D2F] hover:bg-[#521321] text-white px-4 py-2 rounded-lg text-xs font-medium">Buscar</button>
                 </div>
-                <!-- BOTÓN PARA ABRIR EL ESCÁNER -->
-                <button onclick="iniciarEscaner()" class="w-full bg-amber-600 hover:bg-amber-700 text-white py-2 rounded-lg text-xs font-medium flex items-center justify-center space-x-2">
-                    <span>📷 Escanear Código (Cámara)</span>
-                </button>
-                
-                <!-- CONTENEDOR DE LA CÁMARA (Oculto por defecto) -->
-                <div id="reader" class="hidden w-full overflow-hidden rounded-lg border"></div>
-                <button id="btnCloseScanner" onclick="detenerEscaner()" class="w-full bg-slate-500 text-white py-1 rounded-lg text-xs hidden mt-2">Cerrar Cámara</button>
+                <p class="text-[10px] text-slate-400 italic">💡 Consejo: Use el micrófono del teclado de su celular para dictar la CURP rápidamente.</p>
             </div>
 
             <!-- TARJETA DE RESULTADO -->
@@ -93,8 +85,7 @@
 
     <!-- CONTROL JAVASCRIPT -->
     <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbximbEu4MKDk2x_ZwT1_MLY9d0k0B552yaj4Tuk_9j4gV08wJCCecwGqksN5rnhgLOyzw/exec';
-        let html5QrCode = null;
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwdKavKfluF7L98uyHAKjxyqEfsrmJRxIsXtDKLh0qjM4VSNrdDmnBcjPTZHR8jlOmOoA/exec';
 
         function intentarLogin() {
             let pass = document.getElementById('txtPassword').value;
@@ -131,54 +122,15 @@
             location.reload();
         }
 
+        function limpiarCampo() {
+            document.getElementById('txtCurpInput').value = "";
+            document.getElementById('txtCurpInput').focus();
+        }
+
         function consultarCurpManual() {
             let curp = document.getElementById('txtCurpInput').value.trim();
             if(!curp) return;
             procesarCurp(curp);
-        }
-
-        // FUNCIONES DE ESCANEO DE CÁMARA
-        function iniciarEscaner() {
-            document.getElementById('reader').classList.remove('hidden');
-            document.getElementById('btnCloseScanner').classList.remove('hidden');
-
-            if (!html5QrCode) {
-                html5QrCode = new Html5Qrcode("reader");
-            }
-
-            html5QrCode.start(
-                { facingMode: "environment" }, // Usa la cámara trasera preferentemente
-                {
-                    fps: 10,
-                    qrbox: { width: 250, height: 100 }
-                },
-                (decodedText, decodedResult) => {
-                    // Al leer con éxito el código de barras / QR:
-                    document.getElementById('txtCurpInput').value = decodedText.trim().toUpperCase();
-                    detenerEscaner();
-                    consultarCurpManual(); // Lanza la búsqueda automáticamente
-                },
-                (errorMessage) => {
-                    // Errores de escaneo en tiempo real se ignoran para no saturar
-                }
-            ).catch(err => {
-                alert("No se pudo iniciar la cámara. Asegúrese de dar permisos en el navegador.");
-                detenerEscaner();
-            });
-        }
-
-        function detenerEscaner() {
-            if (html5QrCode && html5QrCode.isScanning) {
-                html5QrCode.stop().then(() => {
-                    document.getElementById('reader').classList.add('hidden');
-                    document.getElementById('btnCloseScanner').classList.add('hidden');
-                }).catch(err => {
-                    console.error("Error al detener el escáner", err);
-                });
-            } else {
-                document.getElementById('reader').classList.add('hidden');
-                document.getElementById('btnCloseScanner').classList.add('hidden');
-            }
         }
 
         function procesarCurp(curp) {
