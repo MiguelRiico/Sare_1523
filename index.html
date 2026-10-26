@@ -5,18 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema Institucional - BRC</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Librería para el escáner de códigos de barras / QR por cámara -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body class="bg-slate-100 font-sans min-h-screen flex flex-col justify-between">
 
-    <!-- HEADER CON VERSIÓN 1.7 -->
+    <!-- HEADER CON VERSIÓN 1.8 -->
     <header class="bg-[#6B1D2F] text-white shadow-md p-4 flex justify-between items-center">
         <div class="flex items-center space-x-3">
             <div class="bg-white px-2 py-1 rounded text-xs font-bold text-[#6B1D2F]">GOBIERNO DE MÉXICO</div>
             <div>
                 <h1 class="text-sm font-semibold tracking-wide">Servidor Educativo - SARE 1523</h1>
-                <p class="text-[10px] text-amber-300 font-mono">Versión 1.7 (Con Login y Escáner)</p>
+                <p class="text-[10px] text-amber-300 font-mono">Versión 1.8 (Filtro de CURP)</p>
             </div>
         </div>
         <button id="btnLogout" onclick="cerrarSesion()" class="hidden text-xs bg-amber-600 hover:bg-amber-700 px-3 py-1 rounded font-medium">Salir</button>
@@ -43,17 +42,15 @@
                 <h3 class="text-sm font-bold text-slate-700">Consulta por CURP</h3>
                 <p class="text-xs text-slate-500">Escriba, pegue, escanee o dicte el CURP:</p>
                 <div class="flex space-x-2">
-                    <input type="text" id="txtCurpInput" placeholder="Ingrese CURP..." class="w-full px-3 py-2 border rounded-lg text-sm uppercase font-mono outline-none focus:ring-2 focus:ring-[#6B1D2F]">
+                    <input type="text" id="txtCurpInput" placeholder="Ingrese CURP..." maxlength="18" class="w-full px-3 py-2 border rounded-lg text-sm uppercase font-mono outline-none focus:ring-2 focus:ring-[#6B1D2F]">
                     <button onclick="limpiarCampo()" class="bg-slate-300 hover:bg-slate-400 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold">Limpiar</button>
                     <button onclick="consultarCurpManual()" class="bg-[#6B1D2F] hover:bg-[#521321] text-white px-4 py-2 rounded-lg text-xs font-medium">Buscar</button>
                 </div>
                 
-                <!-- BOTÓN PARA ABRIR EL ESCÁNER DE CÁMARA -->
                 <button onclick="iniciarEscaner()" class="w-full bg-amber-600 hover:bg-amber-700 text-white py-2 rounded-lg text-xs font-medium flex items-center justify-center space-x-2">
                     <span>📷 Escanear con Cámara</span>
                 </button>
                 
-                <!-- CONTENEDOR DE LA CÁMARA -->
                 <div id="reader" class="hidden w-full overflow-hidden rounded-lg border mt-2"></div>
                 <button id="btnCloseScanner" onclick="detenerEscaner()" class="w-full bg-slate-500 text-white py-1 rounded-lg text-xs hidden mt-2">Cerrar Cámara</button>
             </div>
@@ -104,7 +101,7 @@
 
     <!-- CONTROL JAVASCRIPT -->
     <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbwSMDMfHD7RU9ajIz6lg7_l_rZy415VF8cvVjXl74iRpsGYNZu0xYyOz2LoB7gJigitWQ/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwQ077nXIDwezm9kqx-6ZgU33N8ux5OGHbYZ19bEPl_b5JSGyMhNkaTWZhkyNEg1dY3Pw/exec';
         let html5QrCode = null;
 
         function mostrarDebug(mensaje) {
@@ -154,7 +151,6 @@
             document.getElementById('txtCurpInput').focus();
         }
 
-        // CONTROL DE CÁMARA / ESCÁNER
         function iniciarEscaner() {
             document.getElementById('reader').classList.remove('hidden');
             document.getElementById('btnCloseScanner').classList.remove('hidden');
@@ -171,18 +167,16 @@
                 },
                 (decodedText, decodedResult) => {
                     let textoDetectado = decodedText.trim().toUpperCase();
-                    // Si detecta un texto largo que parece CURP (18 caracteres)
                     if (textoDetectado.length >= 16) {
-                        document.getElementById('txtCurpInput').value = textoDetectado;
+                        // Toma máximo 18 caracteres por seguridad
+                        document.getElementById('txtCurpInput').value = textoDetectado.substring(0, 18);
                         detenerEscaner();
                         consultarCurpManual();
                     }
                 },
-                (errorMessage) => {
-                    // Ignora errores de fotogramas vacíos
-                }
+                (errorMessage) => {}
             ).catch(err => {
-                alert("No se pudo iniciar la cámara. Verifique los permisos en su navegador.");
+                alert("No se pudo iniciar la cámara.");
                 detenerEscaner();
             });
         }
@@ -192,9 +186,7 @@
                 html5QrCode.stop().then(() => {
                     document.getElementById('reader').classList.add('hidden');
                     document.getElementById('btnCloseScanner').classList.add('hidden');
-                }).catch(err => {
-                    console.error("Error al detener", err);
-                });
+                }).catch(err => { console.error(err); });
             } else {
                 document.getElementById('reader').classList.add('hidden');
                 document.getElementById('btnCloseScanner').classList.add('hidden');
@@ -202,8 +194,10 @@
         }
 
         function consultarCurpManual() {
-            let curp = document.getElementById('txtCurpInput').value.trim();
+            let curp = document.getElementById('txtCurpInput').value.trim().toUpperCase();
             if(!curp) return;
+            if(curp.length > 18) curp = curp.substring(0, 18);
+            document.getElementById('txtCurpInput').value = curp;
             procesarCurp(curp);
         }
 
