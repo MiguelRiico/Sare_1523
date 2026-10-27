@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
+<script>
+    // Verificar si hay una sesión activa de usuario
+    if (!sessionStorage.getItem("sare_user")) {
+        // Si no ha iniciado sesión, lo redirige automáticamente al login (index)
+        window.location.href = "index.html";
+    }
+</script>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Validador de Vigencia - Servidor Educativo SARE 1523</title>
