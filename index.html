@@ -1,1 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Acceso - Sare 1523</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 min-h-screen flex flex-col justify-between">
 
+    <!-- CONTENEDOR DE LOGIN -->
+    <div id="login-container" class="flex items-center justify-center flex-grow p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-200">
+            <div class="text-center mb-6">
+                <span class="bg-blue-600 text-white text-xs px-2.5 py-1 rounded-full font-bold">REGIÓN 1523</span>
+                <h1 class="text-2xl font-bold text-slate-800 mt-2">Control de Acceso</h1>
+                <p class="text-sm text-slate-500 mt-1">Ingresa tu número de usuario / folio</p>
+            </div>
+
+            <!-- Formulario de Login -->
+            <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Usuario / Folio</label>
+                    <input type="text" id="username" required placeholder="Ej. 1502371" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-700">
+                </div>
+                <div id="password-group">
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Contraseña</label>
+                    <input type="password" id="password" placeholder="Ingresa tu contraseña" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-700">
+                </div>
+                <button type="submit" id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition duration-200 shadow-md">
+                    Entrar al Sistema
+                </button>
+                <p id="error-msg" class="text-red-500 text-xs text-center hidden font-medium mt-2"></p>
+                <p id="loading-msg" class="text-blue-600 text-xs text-center hidden font-medium mt-2">Verificando credenciales...</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR DE CREACIÓN DE CONTRASEÑA (Primer Ingreso) -->
+    <div id="first-login-container" class="hidden flex items-center justify-center flex-grow p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-200">
+            <div class="text-center mb-6">
+                <span class="bg-amber-500 text-white text-xs px-2.5 py-1 rounded-full font-bold">PRIMER ACCESO</span>
+                <h1 class="text-2xl font-bold text-slate-800 mt-2">Crea tu Contraseña</h1>
+                <p id="welcome-user-name" class="text-sm text-slate-600 mt-1 font-semibold"></p>
+                <p class="text-xs text-slate-500 mt-1">Como es tu primera vez, establece una contraseña personal para tus futuros accesos.</p>
+            </div>
+            <form onsubmit="handleSetPassword(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nueva Contraseña</label>
+                    <input type="password" id="new-password" required placeholder="Mínimo 6 caracteres" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-700">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Confirma la Contraseña</label>
+                    <input type="password" id="confirm-password" required placeholder="Repite tu contraseña" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-700">
+                </div>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-lg transition duration-200 shadow-md">
+                    Guardar y Entrar
+                </button>
+                <p id="pass-error-msg" class="text-red-500 text-xs text-center hidden font-medium mt-2"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR DEL MENÚ PRINCIPAL (DASHBOARD) -->
+    <div id="dashboard-container" class="hidden flex-grow flex flex-col">
+        <header class="bg-white shadow-sm border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <span class="bg-blue-600 text-white text-xs px-2.5 py-1 rounded-full font-bold">SARE 1523</span>
+                <h2 class="text-lg font-bold text-slate-800">Panel de Navegación</h2>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span id="user-display" class="text-sm text-slate-600 font-medium"></span>
+                <button onclick="handleLogout()" class="text-sm text-red-600 hover:text-red-800 font-semibold px-3 py-1.5 border border-red-200 rounded-lg hover:bg-red-50 transition">
+                    Cerrar Sesión
+                </button>
+            </div>
+        </header>
+
+        <main class="max-w-5xl w-full mx-auto p-6 md:p-10 flex-grow">
+            <div class="mb-8">
+                <h3 id="greeting-title" class="text-2xl font-extrabold text-slate-800">Bienvenido</h3>
+                <p class="text-slate-500 text-sm mt-1">Selecciona el módulo al que deseas ingresar:</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Módulo Vigencia -->
+                <a href="Vigencia.html" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md hover:border-blue-300 transition group flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center font-bold text-xl mb-4 group-hover:bg-blue-600 group-hover:text-white transition">
+                            V
+                        </div>
+                        <h4 class="text-lg font-bold text-slate-800 group-hover:text-blue-600 transition">Módulo de Vigencia</h4>
+                        <p class="text-slate-500 text-sm mt-1">Consultar estatus de vigencias, registros y validaciones operativas.</p>
+                    </div>
+                    <span class="text-blue-600 text-sm font-semibold mt-6 inline-flex items-center">
+                        Acceder al módulo &rarr;
+                    </span>
+                </a>
+
+                <!-- Módulo Rechazo -->
+                <a href="Rechazo.html" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md hover:border-red-300 transition group flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 bg-red-50 text-red-600 rounded-lg flex items-center justify-center font-bold text-xl mb-4 group-hover:bg-red-600 group-hover:text-white transition">
+                            R
+                        </div>
+                        <h4 class="text-lg font-bold text-slate-800 group-hover:text-red-600 transition">Módulo de Rechazos</h4>
+                        <p class="text-slate-500 text-sm mt-1">Administración y revisión de registros rechazados y motivos.</p>
+                    </div>
+                    <span class="text-red-600 text-sm font-semibold mt-6 inline-flex items-center">
+                        Acceder al módulo &rarr;
+                    </span>
+                </a>
+            </div>
+        </main>
+    </div>
+
+    <footer class="text-center py-4 text-xs text-slate-400 border-t border-slate-200 bg-white">
+        Coordinación Regional 1523 &copy; 2026
+    </footer>
+
+    <!-- SCRIPT DE CONEXIÓN CON APPS SCRIPT -->
+    <script>
+        // TU URL DE GOOGLE APPS SCRIPT
+        const API_URL = "https://script.google.com/macros/s/AKfycbzvVdEGOq12YnsW3sNmo8O4cUwf8m5ubAj1VO3lKh87l3hBIN9horMOZrWJuJxp_Clg/exec";
+
+        let tempUserForPassword = "";
+
+        // Validar si ya hay sesión al cargar
+        window.addEventListener("DOMContentLoaded", () => {
+            const savedUser = sessionStorage.getItem("sare_user");
+            const savedName = sessionStorage.getItem("sare_name");
+            if (savedUser) {
+                showDashboard(savedUser, savedName);
+            }
+        });
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            const usuario = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value;
+            const errorMsg = document.getElementById("error-msg");
+            const loadingMsg = document.getElementById("loading-msg");
+
+            errorMsg.classList.add("hidden");
+            loadingMsg.classList.remove("hidden");
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    body: JSON.stringify({ action: "login", usuario: usuario, password: password })
+                });
+                const result = await response.json();
+                loadingMsg.classList.add("hidden");
+
+                if (result.status === "success") {
+                    sessionStorage.setItem("sare_user", result.usuario);
+                    sessionStorage.setItem("sare_name", result.nombre);
+                    showDashboard(result.usuario, result.nombre);
+                } else if (result.status === "first_login") {
+                    tempUserForPassword = result.usuario;
+                    document.getElementById("welcome-user-name").textContent = `Hola, ${result.nombre}`;
+                    document.getElementById("login-container").classList.add("hidden");
+                    document.getElementById("first-login-container").classList.remove("hidden");
+                } else {
+                    errorMsg.textContent = result.message || "Credenciales incorrectas.";
+                    errorMsg.classList.remove("hidden");
+                }
+            } catch (err) {
+                loadingMsg.classList.add("hidden");
+                errorMsg.textContent = "Error de conexión con el servidor.";
+                errorMsg.classList.remove("hidden");
+            }
+        }
+
+        async function handleSetPassword(event) {
+            event.preventDefault();
+            const p1 = document.getElementById("new-password").value;
+            const p2 = document.getElementById("confirm-password").value;
+            const passError = document.getElementById("pass-error-msg");
+
+            if (p1 !== p2) {
+                passError.textContent = "Las contraseñas no coinciden.";
+                passError.classList.remove("hidden");
+                return;
+            }
+            if (p1.length < 6) {
+                passError.textContent = "La contraseña debe tener al menos 6 caracteres.";
+                passError.classList.remove("hidden");
+                return;
+            }
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    body: JSON.stringify({ action: "setPassword", usuario: tempUserForPassword, password: p1 })
+                });
+                const result = await response.json();
+
+                if (result.status === "success") {
+                    sessionStorage.setItem("sare_user", result.usuario);
+                    sessionStorage.setItem("sare_name", result.nombre);
+                    document.getElementById("first-login-container").classList.add("hidden");
+                    showDashboard(result.usuario, result.nombre);
+                } else {
+                    passError.textContent = result.message || "Error al guardar contraseña.";
+                    passError.classList.remove("hidden");
+                }
+            } catch (err) {
+                passError.textContent = "Error de conexión con el servidor.";
+                passError.classList.remove("hidden");
+            }
+        }
+
+        function showDashboard(usuario, nombre) {
+            document.getElementById("login-container").classList.add("hidden");
+            document.getElementById("first-login-container").classList.add("hidden");
+            document.getElementById("dashboard-container").classList.remove("hidden");
+            document.getElementById("user-display").textContent = `Usuario: ${usuario}`;
+            document.getElementById("greeting-title").textContent = `Bienvenido, ${nombre}`;
+        }
+
+        function handleLogout() {
+            sessionStorage.clear();
+            window.location.reload();
+        }
+    </script>
+</body>
+</html>
