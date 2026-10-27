@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Salidas - SARE 1523</title>
+    <title>Control de Inventario - SARE 1523</title>
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Librería optimizada Html5-Qrcode para lectura perfecta de códigos de barras y QR -->
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         body { font-family: 'Public Sans', sans-serif; background-color: #f8fafc; }
         .bg-gob-primary { background-color: #691C32; }
@@ -33,8 +31,8 @@
                     GOBIERNO DE MÉXICO
                 </div>
                 <div>
-                    <h1 class="text-lg font-semibold leading-tight">Control de Salidas de Tarjetas</h1>
-                    <p class="text-xs text-red-200">Módulo de Escaneo Rápido (Modo Ráfaga)</p>
+                    <h1 class="text-lg font-semibold leading-tight">Control de Inventario de Tarjetas</h1>
+                    <p class="text-xs text-red-200">Salidas y Corte Fin de Día (Canastita)</p>
                 </div>
             </div>
             <a href="index.html" class="bg-amber-500 hover:bg-amber-600 text-white font-medium text-xs px-4 py-2 rounded shadow transition">
@@ -46,42 +44,62 @@
     <!-- CONTENIDO PRINCIPAL -->
     <main class="max-w-4xl w-full mx-auto p-4 flex-grow space-y-6">
 
-        <!-- Selector de Opciones (Pestañas) -->
+        <!-- Selector de Pestañas -->
         <div class="bg-white rounded-xl shadow-md p-2 border-t-4 border-gob-primary grid grid-cols-2 gap-2">
-            <button onclick="cambiarModo('pistola')" id="tabPistola" class="py-2.5 rounded-lg text-sm font-bold bg-[#691C32] text-white shadow transition text-center">
-                🔫 Opción A: Lector / Pistola USB
+            <button onclick="cambiarSeccion('salidas')" id="tabSalidas" class="py-2.5 rounded-lg text-sm font-bold bg-[#691C32] text-white shadow transition text-center">
+                📦 1. Salidas de Tarjetas
             </button>
-            <button onclick="cambiarModo('camara')" id="tabCamara" class="py-2.5 rounded-lg text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center">
-                📷 Opción B: Cámara del Celular
+            <button onclick="cambiarSeccion('canastita')" id="tabCanastita" class="py-2.5 rounded-lg text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center">
+                📥 2. Canastita (Descontar / Borrar de Salidas)
             </button>
         </div>
 
-        <!-- OPCIÓN A: ESCANEO POR PISTOLA / TECLADO -->
-        <div id="seccionPistola" class="bg-white rounded-xl shadow-md p-6 border border-slate-200 space-y-4 text-center">
-            <h2 class="text-sm font-bold text-gray-700 uppercase">Escaneo Continuo de Alta Velocidad</h2>
-            <div class="max-w-md mx-auto">
-                <input type="text" id="codigoInput" placeholder="Listo para escanear tarjeta..." 
-                    oninput="procesarLectura(this)" autofocus
+        <!-- SECCIÓN 1: SALIDAS -->
+        <div id="seccionSalidas" class="bg-white rounded-xl shadow-md p-6 border border-slate-200 space-y-4">
+            <div class="text-center space-y-2">
+                <h2 class="text-sm font-bold text-gray-700 uppercase">Escaneo de Salidas (Pistola USB / Ráfaga)</h2>
+                <!-- Instrucción visible de la pestaña -->
+                <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-lg text-xs text-emerald-900 text-left max-w-lg mx-auto">
+                    <p class="font-bold mb-1">📌 Instrucciones de Operación:</p>
+                    <ul class="list-disc list-inside space-y-0.5">
+                        <li>Mantenga el cursor dentro de la barra de escaneo.</li>
+                        <li>Pase la pistola lectora por el código de barras de la tarjeta que entrega.</li>
+                        <li>El sistema registrará la salida de inmediato y limpiará la pantalla en automático.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="max-w-md mx-auto pt-2">
+                <input type="text" id="codigoSalidaInput" placeholder="Escanee tarjeta saliente..." 
+                    oninput="procesarEntrada(this, 'salida')" autofocus
                     class="w-full text-center uppercase tracking-widest font-mono text-lg border-2 border-slate-300 rounded-xl px-4 py-4 text-gray-800 focus:outline-none focus:border-[#691C32] shadow-inner bg-slate-50">
             </div>
-            <p class="text-xs text-slate-400">El sistema registra de inmediato y limpia la pantalla para el siguiente escaneo.</p>
         </div>
 
-        <!-- OPCIÓN B: ESCANEO POR CÁMARA DE CELULAR -->
-        <div id="seccionCamara" class="bg-black rounded-xl p-4 shadow-inner text-center hidden space-y-3">
-            <div class="flex justify-between items-center text-white px-2">
-                <span class="text-xs font-mono">Apunta la cámara al código de barras</span>
-                <button onclick="detenerEscanner()" class="bg-red-600 hover:bg-red-700 text-xs px-3 py-1 rounded font-bold">Cerrar Cámara</button>
+        <!-- SECCIÓN 2: CANASTITA (DEVOLUCIONES - BORRA DE SALIDAS) -->
+        <div id="seccionCanastita" class="bg-white rounded-xl shadow-md p-6 border border-amber-400 space-y-4 hidden">
+            <div class="text-center space-y-2">
+                <h2 class="text-sm font-bold text-amber-800 uppercase">Corte Fin de Día - Canastita (Devoluciones)</h2>
+                <!-- Instrucción visible de la pestaña -->
+                <div class="bg-amber-50 border border-amber-200 p-3 rounded-lg text-xs text-amber-900 text-left max-w-lg mx-auto">
+                    <p class="font-bold mb-1">📌 Instrucciones de Corte:</p>
+                    <ul class="list-disc list-inside space-y-0.5">
+                        <li>Utilice esta sección al finalizar la jornada de entrega.</li>
+                        <li>Escanee aquellas tarjetas que <strong>no se entregaron</strong> y se regresan a resguardo.</li>
+                        <li>El sistema buscará el folio en la hoja de salidas y <strong>lo eliminará automáticamente</strong> para descontarlo del inventario del día.</li>
+                    </ul>
+                </div>
             </div>
-            <!-- Contenedor optimizado para la cámara -->
-            <div id="reader" class="max-w-sm mx-auto overflow-hidden rounded-lg border-2 border-amber-500 bg-black"></div>
-            <p id="scannerStatus" class="text-xs text-amber-400 font-mono">Cámara inactiva</p>
+            <div class="max-w-md mx-auto pt-2">
+                <input type="text" id="codigoCanastitaInput" placeholder="Escanee tarjeta devuelta..." 
+                    oninput="procesarEntrada(this, 'canastita')"
+                    class="w-full text-center uppercase tracking-widest font-mono text-lg border-2 border-amber-400 rounded-xl px-4 py-4 text-gray-800 focus:outline-none focus:border-amber-600 shadow-inner bg-amber-50">
+            </div>
         </div>
 
-        <!-- NOTIFICACIÓN DE ÉXITO RÁPIDA -->
+        <!-- NOTIFICACIÓN DE ÉXITO -->
         <div id="alertaExito" class="bg-emerald-50 border-l-8 border-emerald-600 rounded-xl p-4 shadow-md hidden flex items-center justify-between">
             <div>
-                <span class="bg-emerald-200 text-emerald-900 text-[10px] font-bold px-2 py-0.5 rounded">REGISTRADO CON ÉXITO</span>
+                <span id="badgeExito" class="bg-emerald-200 text-emerald-900 text-[10px] font-bold px-2 py-0.5 rounded">REGISTRADO</span>
                 <p class="text-sm font-bold text-gray-900 mt-1"><span id="lblNombre"></span></p>
                 <p class="text-xs text-gray-600 font-mono">Folio: <span id="lblFolio"></span> | CCT: <span id="lblCct" class="text-[#691C32] font-bold"></span></p>
             </div>
@@ -90,15 +108,15 @@
 
         <!-- ALERTA DE ERROR -->
         <div id="alertaError" class="bg-red-50 border-l-8 border-red-600 rounded-xl p-4 shadow-md hidden text-center space-y-1">
-            <p class="font-bold text-sm text-red-800">❌ Error en el registro</p>
+            <p class="font-bold text-sm text-red-800">❌ Error</p>
             <p id="lblErrorMsg" class="text-xs font-semibold text-red-700"></p>
         </div>
 
-        <!-- HISTORIAL RÁPIDO DE LA SESIÓN -->
+        <!-- HISTORIAL RÁPIDO -->
         <div class="bg-white rounded-xl shadow-md p-6 border border-slate-200 space-y-3">
             <div class="flex justify-between items-center">
-                <h3 class="text-sm font-bold text-gray-800">Historial de Salidas en esta Sesión</h3>
-                <span id="contadorSesion" class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded font-bold font-mono">0 registradas</span>
+                <h3 id="tituloHistorial" class="text-sm font-bold text-gray-800">Historial de Salidas en esta Sesión</h3>
+                <span id="contadorSesion" class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded font-bold font-mono">0 procesadas</span>
             </div>
             <div class="overflow-x-auto max-h-56">
                 <table class="w-full text-left text-xs divide-y divide-slate-100">
@@ -127,69 +145,76 @@
 
     <!-- SCRIPT DE CONTROL -->
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbzZqmLCh-VAOKisSBQHnZi_nKEw2gYKnze0ldWu_6I3kdVwetdEacFky8h0uuC-O-G_pQ/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbyjeq0NIfCCLe3iX3Kh9eM7iHpQQUK_A7cQU79OlKsF54OJNvZ83t_QmbY2tMvsUez8qQ/exec";
         let totalSesion = 0;
         let procesando = false;
-        let html5QrCode = null;
+        let seccionActual = 'salidas';
 
-        function cambiarModo(modo) {
-            detenerEscanner();
-            const sPistola = document.getElementById('seccionPistola');
-            const sCamara = document.getElementById('seccionCamara');
-            const tPistola = document.getElementById('tabPistola');
-            const tCamara = document.getElementById('tabCamara');
+        function cambiarSeccion(seccion) {
+            seccionActual = seccion;
+            const sSalidas = document.getElementById('seccionSalidas');
+            const sCanastita = document.getElementById('seccionCanastita');
+            const tSalidas = document.getElementById('tabSalidas');
+            const tCanastita = document.getElementById('tabCanastita');
+            const titHistorial = document.getElementById('tituloHistorial');
 
-            if (modo === 'pistola') {
-                sPistola.classList.remove('hidden');
-                sCamara.classList.add('hidden');
-                tPistola.className = "py-2.5 rounded-lg text-sm font-bold bg-[#691C32] text-white shadow transition text-center";
-                tCamara.className = "py-2.5 rounded-lg text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center";
-                mantenerFoco();
+            if (seccion === 'salidas') {
+                sSalidas.classList.remove('hidden');
+                sCanastita.classList.add('hidden');
+                tSalidas.className = "py-2.5 rounded-lg text-sm font-bold bg-[#691C32] text-white shadow transition text-center";
+                tCanastita.className = "py-2.5 rounded-lg text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center";
+                titHistorial.textContent = "Historial de Salidas en esta Sesión";
             } else {
-                sPistola.classList.add('hidden');
-                sCamara.classList.remove('hidden');
-                tCamara.className = "py-2.5 rounded-lg text-sm font-bold bg-[#691C32] text-white shadow transition text-center";
-                tPistola.className = "py-2.5 rounded-lg text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center";
-                iniciarEscanner();
+                sSalidas.classList.add('hidden');
+                sCanastita.classList.remove('hidden');
+                tCanastita.className = "py-2.5 rounded-lg text-sm font-bold bg-amber-600 text-white shadow transition text-center";
+                tSalidas.className = "py-2.5 rounded-lg text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center";
+                titHistorial.textContent = "Historial de Canastita (Tarjetas Descontadas de Salidas)";
             }
+            totalSesion = 0;
+            document.getElementById('contadorSesion').textContent = "0 procesadas";
+            document.getElementById('tablaHistorial').innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 italic">No hay registros en esta sesión todavía.</td></tr>`;
+            mantenerFoco();
         }
 
-        // Mantener foco automático para la pistola USB
         function mantenerFoco() {
-            const input = document.getElementById("codigoInput");
-            if (document.activeElement !== input && document.getElementById('seccionPistola').classList.contains('hidden') === false) {
+            const input = seccionActual === 'salidas' ? document.getElementById("codigoSalidaInput") : document.getElementById("codigoCanastitaInput");
+            if (document.activeElement !== input) {
                 input.focus();
             }
         }
         setInterval(mantenerFoco, 800);
 
-        function procesarLectura(input) {
+        function procesarEntrada(input, tipo) {
             if (procesando) return;
             let codigo = input.value.trim();
             
             if (codigo.length >= 16) {
                 procesando = true;
-                enviarSalidaServidor(codigo);
+                enviarServidor(codigo, tipo);
             }
         }
 
-        async function enviarSalidaServidor(codigo) {
+        async function enviarServidor(codigo, tipo) {
             ocultarAlertas();
-            const input = document.getElementById("codigoInput");
-            if(input) input.value = "Guardando...";
+            const inputId = tipo === 'salida' ? "codigoSalidaInput" : "codigoCanastitaInput";
+            const input = document.getElementById(inputId);
+            if(input) input.value = "Procesando...";
+
+            const actionName = tipo === 'salida' ? "registrarSalida" : "registrarDevolucion";
 
             try {
                 const response = await fetch(API_URL, {
                     method: "POST",
-                    body: JSON.stringify({ action: "registrarSalida", codigo: codigo })
+                    body: JSON.stringify({ action: actionName, codigo: codigo })
                 });
                 const result = await response.json();
 
                 if (result.status === "success") {
-                    mostrarExito(result, codigo);
-                    agregarAlHistorial(result, codigo);
+                    mostrarExito(result, codigo, tipo);
+                    agregarAlHistorial(result, codigo, tipo);
                 } else {
-                    mostrarError(result.mensaje || "Folio no encontrado en la lista nominal.");
+                    mostrarError(result.mensaje || "Acción no completada.");
                 }
 
             } catch (err) {
@@ -203,9 +228,19 @@
             }
         }
 
-        function mostrarExito(res, folio) {
+        function mostrarExito(res, folio, tipo) {
             const alerta = document.getElementById('alertaExito');
+            const badge = document.getElementById('badgeExito');
             alerta.classList.remove('hidden');
+            
+            if (tipo === 'salida') {
+                badge.textContent = "SALIDA REGISTRADA";
+                badge.className = "bg-emerald-200 text-emerald-900 text-[10px] font-bold px-2 py-0.5 rounded";
+            } else {
+                badge.textContent = "ELIMINADO DE SALIDAS (CANASTITA)";
+                badge.className = "bg-amber-200 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded";
+            }
+
             document.getElementById('lblNombre').textContent = res.nombre;
             document.getElementById('lblFolio').textContent = folio;
             document.getElementById('lblCct').textContent = res.cct;
@@ -224,75 +259,25 @@
             document.getElementById('alertaError').classList.add('hidden');
         }
 
-        function agregarAlHistorial(res, folio) {
+        function agregarAlHistorial(res, folio, tipo) {
             totalSesion++;
-            document.getElementById('contadorSesion').textContent = `${totalSesion} registradas`;
+            document.getElementById('contadorSesion').textContent = `${totalSesion} procesadas`;
 
             const tbody = document.getElementById('tablaHistorial');
             if (totalSesion === 1) tbody.innerHTML = "";
 
             const tr = document.createElement('tr');
             tr.className = "hover:bg-slate-50";
+            
+            const badgeAccion = tipo === 'salida' ? '<span class="text-emerald-700 font-bold">SALIDA</span>' : '<span class="text-amber-700 font-bold">DEVUELTO (BORRADO)</span>';
+
             tr.innerHTML = `
                 <td class="p-2 font-mono text-slate-500">${res.hora}</td>
                 <td class="p-2 font-mono font-bold">${folio}</td>
-                <td class="p-2 font-semibold text-gray-900">${res.nombre}</td>
+                <td class="p-2 font-semibold text-gray-900">${res.nombre} ${badgeAccion}</td>
                 <td class="p-2 font-mono text-[#691C32] font-bold">${res.cct}</td>
             `;
             tbody.prepend(tr);
-        }
-
-        // FUNCIONES DE CÁMARA CON Html5-Qrcode (Optimizado para códigos de barras alargados)
-        async function iniciarEscanner() {
-            const status = document.getElementById('scannerStatus');
-            status.innerText = "Iniciando cámara trasera...";
-
-            if (!html5QrCode) {
-                html5QrCode = new Html5Qrcode("reader");
-            }
-
-            // Configuración con área ancha idónea para códigos de barras de las tarjetas del Bienestar
-            const config = { 
-                fps: 20, 
-                qrbox: { width: 320, height: 120 },
-                aspectRatio: 1.777778 
-            };
-
-            try {
-                await html5QrCode.start(
-                    { facingMode: "environment" }, 
-                    config, 
-                    (decodedText, decodedResult) => {
-                        let codigoDetectado = decodedText.trim();
-                        if (codigoDetectado.length >= 10 && !procesando) {
-                            procesando = true;
-                            status.innerText = `¡Leído con éxito! Registrando...`;
-                            enviarSalidaServidor(codigoDetectado);
-                            
-                            setTimeout(() => { 
-                                procesando = false; 
-                                status.innerText = "Cámara activa. Apunte al código de barras.";
-                            }, 1500);
-                        }
-                    },
-                    (errorMessage) => {
-                        // Se ignoran errores de fotogramas vacíos para mantener velocidad
-                    }
-                );
-                status.innerText = "Cámara activa. Mantenga firme el código dentro del recuadro.";
-            } catch (err) {
-                status.innerText = "Error: No se pudo acceder a la cámara o permisos denegados.";
-            }
-        }
-
-        function detenerEscanner() {
-            if (html5QrCode && html5QrCode.isScanning) {
-                html5QrCode.stop().then(() => {
-                    document.getElementById('scannerStatus').innerText = "Cámara detenida.";
-                }).catch(err => {
-                    console.log("Error al detener la cámara", err);
-                });
-            }
         }
     </script>
 </body>
