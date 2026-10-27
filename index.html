@@ -102,7 +102,7 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Tarjeta Filtro Nominal (Nuevo) -->
+                <!-- Tarjeta Filtro Nominal -->
                 <a href="FiltroSare.html" class="bg-white rounded-xl shadow-md p-6 border-t-4 border-emerald-600 hover:shadow-lg transition group flex flex-col justify-between">
                     <div>
                         <div class="w-12 h-12 bg-emerald-50 text-emerald-700 rounded-lg flex items-center justify-center font-bold text-xl mb-4 group-hover:bg-emerald-600 group-hover:text-white transition">
@@ -155,6 +155,7 @@
 
     <!-- SCRIPT DE CONEXIÓN CON GOOGLE APPS SCRIPT -->
     <script>
+        // URL de tu Apps Script que maneja el LOGIN de usuarios (NO la del filtro)
         const API_URL = "https://script.google.com/macros/s/AKfycbzvVdEGOq12YnsW3sNmo8O4cUwf8m5ubAj1VO3lKh87l3hBIN9horMOZrWJuJxp_Clg/exec";
 
         let tempUserForPassword = "";
@@ -191,4 +192,74 @@
                     showDashboard(result.usuario, result.nombre);
                 } else if (result.status === "first_login") {
                     tempUserForPassword = result.usuario;
-                    document.getElementById("welcome-user-name").textContent = `Usuario
+                    document.getElementById("welcome-user-name").textContent = `Usuario: ${result.nombre}`;
+                    document.getElementById("login-container").classList.add("hidden");
+                    document.getElementById("first-login-container").classList.remove("hidden");
+                } else {
+                    errorMsg.textContent = result.message || "Credenciales incorrectas.";
+                    errorMsg.classList.remove("hidden");
+                }
+            } catch (err) {
+                loadingMsg.classList.add("hidden");
+                errorMsg.textContent = "Error de conexión con el servidor.";
+                errorMsg.classList.remove("hidden");
+            }
+        }
+
+        async function handleSetPassword(event) {
+            event.preventDefault();
+            const p1 = document.getElementById("new-password").value;
+            const p2 = document.getElementById("confirm-password").value;
+            const passError = document.getElementById("pass-error-msg");
+
+            if (p1 !== p2) {
+                passError.textContent = "Las contraseñas no coinciden.";
+                passError.classList.remove("hidden");
+                return;
+            }
+            if (p1.length < 6) {
+                passError.textContent = "La contraseña debe tener al menos 6 caracteres.";
+                passError.classList.remove("hidden");
+                return;
+            }
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    body: JSON.stringify({ action: "setPassword", usuario: tempUserForPassword, password: p1 })
+                });
+                const result = await response.json();
+
+                if (result.status === "success") {
+                    sessionStorage.setItem("sare_user", result.usuario);
+                    sessionStorage.setItem("sare_name", result.nombre);
+                    document.getElementById("first-login-container").classList.add("hidden");
+                    showDashboard(result.usuario, result.nombre);
+                } else {
+                    passError.textContent = result.message || "Error al guardar contraseña.";
+                    passError.classList.remove("hidden");
+                }
+            } catch (err) {
+                passError.textContent = "Error de conexión con el servidor.";
+                passError.classList.add("hidden");
+                passError.classList.remove("hidden");
+            }
+        }
+
+        function showDashboard(usuario, nombre) {
+            document.getElementById("login-container").classList.add("hidden");
+            document.getElementById("first-login-container").classList.add("hidden");
+            document.getElementById("dashboard-container").classList.remove("hidden");
+            document.getElementById("header-user-info").classList.remove("hidden");
+            document.getElementById("header-user-info").classList.add("flex");
+            document.getElementById("user-display").textContent = `Folio: ${usuario}`;
+            document.getElementById("greeting-title").textContent = `Bienvenido, ${nombre}`;
+        }
+
+        function handleLogout() {
+            sessionStorage.clear();
+            window.location.reload();
+        }
+    </script>
+</body>
+</html>
