@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Salidas - SARE 1523</title>
+    <title>Control de Salidas - SARE 1523</title>
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <style>
         body { font-family: 'Public Sans', sans-serif; background-color: #f8fafc; }
         .bg-gob-primary { background-color: #691C32; }
@@ -32,11 +33,11 @@
                 </div>
                 <div>
                     <h1 class="text-lg font-semibold leading-tight">Control de Salidas de Tarjetas</h1>
-                    <p class="text-xs text-red-200">Módulo de Escaneo en Ventanilla</p>
+                    <p class="text-xs text-red-200">Módulo de Escaneo Rápido (Modo Ráfaga)</p>
                 </div>
             </div>
-            <a href="FiltroSare.html" class="bg-amber-500 hover:bg-amber-600 text-white font-medium text-xs px-4 py-2 rounded shadow transition">
-                &larr; Volver al Filtro
+            <a href="index.html" class="bg-amber-500 hover:bg-amber-600 text-white font-medium text-xs px-4 py-2 rounded shadow transition">
+                &larr; Volver al Menú
             </a>
         </div>
     </header>
@@ -44,34 +45,54 @@
     <!-- CONTENIDO PRINCIPAL -->
     <main class="max-w-4xl w-full mx-auto p-4 flex-grow space-y-6">
 
-        <!-- CAJA DE ESCANEO CONTINUO -->
-        <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-gob-primary space-y-4 text-center">
-            <h2 class="text-sm font-bold text-gray-700 uppercase"> pistola o lector de código de barras listo para escanear</h2>
+        <!-- Selector de Opciones (Pestañas) -->
+        <div class="bg-white rounded-xl shadow-md p-2 border-t-4 border-gob-primary grid grid-cols-2 gap-2">
+            <button onclick="cambiarModo('pistola')" id="tabPistola" class="py-2.5 rounded-lg text-sm font-bold bg-[#691C32] text-white shadow transition text-center">
+                🔫 Opción A: Lector / Pistola USB
+            </button>
+            <button onclick="cambiarModo('camara')" id="tabCamara" class="py-2.5 rounded-lg text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center">
+                📷 Opción B: Cámara del Celular
+            </button>
+        </div>
+
+        <!-- OPCIÓN A: ESCANEO POR PISTOLA / TECLADO -->
+        <div id="seccionPistola" class="bg-white rounded-xl shadow-md p-6 border border-slate-200 space-y-4 text-center">
+            <h2 class="text-sm font-bold text-gray-700 uppercase">Escaneo Continuo de Alta Velocidad</h2>
             <div class="max-w-md mx-auto">
-                <input type="text" id="codigoInput" placeholder="Esperando lectura de tarjeta..." 
+                <input type="text" id="codigoInput" placeholder="Listo para escanear tarjeta..." 
                     oninput="procesarLectura(this)" autofocus
                     class="w-full text-center uppercase tracking-widest font-mono text-lg border-2 border-slate-300 rounded-xl px-4 py-4 text-gray-800 focus:outline-none focus:border-[#691C32] shadow-inner bg-slate-50">
             </div>
-            <p class="text-xs text-slate-400">El campo se limpia automáticamente tras cada escaneo exitoso.</p>
+            <p class="text-xs text-slate-400">El sistema registra de inmediato y limpia la pantalla para el siguiente escaneo.</p>
         </div>
 
-        <!-- ALERTA DE ÚLTIMO REGISTRO EXITOSO -->
-        <div id="alertaExito" class="bg-emerald-50 border-l-8 border-emerald-600 rounded-xl p-6 shadow-md hidden space-y-2">
-            <div class="flex justify-between items-start">
-                <span class="bg-emerald-200 text-emerald-900 text-xs font-bold px-2.5 py-1 rounded">¡SALIDA REGISTRADA!</span>
-                <span id="lblHora" class="text-xs font-mono text-emerald-800 font-bold"></span>
+        <!-- OPCIÓN B: ESCANEO POR CÁMARA DE CELULAR -->
+        <div id="seccionCamara" class="bg-black rounded-xl p-4 shadow-inner text-center hidden space-y-3">
+            <div class="flex justify-between items-center text-white px-2">
+                <span class="text-xs font-mono">Apunta la cámara al código de barras o QR</span>
+                <button onclick="detenerEscanner()" class="bg-red-600 hover:bg-red-700 text-xs px-3 py-1 rounded font-bold">Cerrar Cámara</button>
             </div>
-            <div class="text-sm text-gray-800 space-y-1">
-                <p><strong>BENEFICIARIO:</strong> <span id="lblNombre" class="font-bold text-gray-900 text-base"></span></p>
-                <p><strong>FOLIO:</strong> <span id="lblFolio" class="font-mono"></span> | <strong>CCT:</strong> <span id="lblCct" class="font-mono text-[#691C32] font-bold"></span></p>
-                <p><strong>MUNICIPIO:</strong> <span id="lblMunicipio"></span> | <strong>PROGRAMA:</strong> <span id="lblPrograma"></span></p>
+            <div class="relative max-w-sm mx-auto overflow-hidden rounded-lg border-2 border-amber-500">
+                <video id="videoPreview" class="w-full h-64 object-cover"></video>
             </div>
+            <p id="scannerStatus" class="text-xs text-amber-400 font-mono">Buscando código...</p>
+            <canvas id="canvasCanvas" class="hidden"></canvas>
+        </div>
+
+        <!-- NOTIFICACIÓN DE ÉXITO RÁPIDA -->
+        <div id="alertaExito" class="bg-emerald-50 border-l-8 border-emerald-600 rounded-xl p-4 shadow-md hidden flex items-center justify-between">
+            <div>
+                <span class="bg-emerald-200 text-emerald-900 text-[10px] font-bold px-2 py-0.5 rounded">REGISTRADO CON ÉXITO</span>
+                <p class="text-sm font-bold text-gray-900 mt-1"><span id="lblNombre"></span></p>
+                <p class="text-xs text-gray-600 font-mono">Folio: <span id="lblFolio"></span> | CCT: <span id="lblCct" class="text-[#691C32] font-bold"></span></p>
+            </div>
+            <span id="lblHora" class="text-xs font-mono text-emerald-800 font-bold bg-white px-2 py-1 rounded shadow-sm"></span>
         </div>
 
         <!-- ALERTA DE ERROR -->
-        <div id="alertaError" class="bg-red-50 border-l-8 border-red-600 rounded-xl p-6 shadow-md hidden text-center space-y-2">
-            <p class="font-bold text-lg text-red-800">❌ Error en el registro</p>
-            <p id="lblErrorMsg" class="text-sm font-semibold text-red-700"></p>
+        <div id="alertaError" class="bg-red-50 border-l-8 border-red-600 rounded-xl p-4 shadow-md hidden text-center space-y-1">
+            <p class="font-bold text-sm text-red-800">❌ Error en el registro</p>
+            <p id="lblErrorMsg" class="text-xs font-semibold text-red-700"></p>
         </div>
 
         <!-- HISTORIAL RÁPIDO DE LA SESIÓN -->
@@ -80,7 +101,7 @@
                 <h3 class="text-sm font-bold text-gray-800">Historial de Salidas en esta Sesión</h3>
                 <span id="contadorSesion" class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded font-bold font-mono">0 registradas</span>
             </div>
-            <div class="overflow-x-auto max-h-64">
+            <div class="overflow-x-auto max-h-56">
                 <table class="w-full text-left text-xs divide-y divide-slate-100">
                     <thead class="bg-slate-50 text-slate-600 uppercase font-bold">
                         <tr>
@@ -105,28 +126,50 @@
         Coordinación Nacional de Becas para el Bienestar • Región 1523 (SARE Tultitlán)
     </footer>
 
-    <!-- SCRIPT DE CONTROL DE ESCANEO -->
+    <!-- SCRIPT DE CONTROL -->
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbzZqmLCh-VAOKisSBQHnZi_nKEw2gYKnze0ldWu_6I3kdVwetdEacFky8h0uuC-O-G_pQ/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbzQmLCh-VAoKisSBQHnZi_nKew2gYKnze0ldWvdetDeacFky8h0uuC-O-G_pQ/exec";
         let totalSesion = 0;
         let procesando = false;
+        let videoStream = null;
+        let scanningInterval = null;
 
-        // Mantener el foco siempre en el input para que la pistola escanee sin clics
-        function mantenerFoco() {
-            const input = document.getElementById("codigoInput");
-            if (document.activeElement !== input) {
-                input.focus();
+        function cambiarModo(modo) {
+            detenerEscanner();
+            const sPistola = document.getElementById('seccionPistola');
+            const sCamara = document.getElementById('seccionCamara');
+            const tPistola = document.getElementById('tabPistola');
+            const tCamara = document.getElementById('tabCamara');
+
+            if (modo === 'pistola') {
+                sPistola.classList.remove('hidden');
+                sCamara.classList.add('hidden');
+                tPistola.className = "py-2.5 rounded-lg text-sm font-bold bg-[#691C32] text-white shadow transition text-center";
+                tCamara.className = "py-2.5 rounded-lg text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center";
+                mantenerFoco();
+            } else {
+                sPistola.classList.add('hidden');
+                sCamara.classList.remove('hidden');
+                tCamara.className = "py-2.5 rounded-lg text-sm font-bold bg-[#691C32] text-white shadow transition text-center";
+                tPistola.className = "py-2.5 rounded-lg text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center";
+                iniciarEscanner();
             }
         }
 
-        setInterval(mantenerFoco, 1000);
+        // Mantener foco automático para la pistola
+        function mantenerFoco() {
+            const input = document.getElementById("codigoInput");
+            if (document.activeElement !== input && document.getElementById('seccionPistola').classList.contains('hidden') === false) {
+                input.focus();
+            }
+        }
+        setInterval(mantenerFoco, 800);
 
         function procesarLectura(input) {
             if (procesando) return;
-            
             let codigo = input.value.trim();
             
-            // Los códigos de tarjeta del Bienestar suelen tener 16 caracteres o más
+            // Cuando detecte el código completo (ej. 16 caracteres o más)
             if (codigo.length >= 16) {
                 procesando = true;
                 enviarSalidaServidor(codigo);
@@ -136,8 +179,7 @@
         async function enviarSalidaServidor(codigo) {
             ocultarAlertas();
             const input = document.getElementById("codigoInput");
-            input.disabled = true;
-            input.value = "Registrando...";
+            input.value = "Guardando...";
 
             try {
                 const response = await fetch(API_URL, {
@@ -154,9 +196,8 @@
                 }
 
             } catch (err) {
-                mostrarError("Error de conexión con el servidor de Google.");
+                mostrarError("Error de conexión con el servidor.");
             } finally {
-                input.disabled = false;
                 input.value = "";
                 input.focus();
                 procesando = false;
@@ -164,19 +205,20 @@
         }
 
         function mostrarExito(res, folio) {
-            document.getElementById('alertaExito').classList.remove('hidden');
+            const alerta = document.getElementById('alertaExito');
+            alerta.classList.remove('hidden');
             document.getElementById('lblNombre').textContent = res.nombre;
             document.getElementById('lblFolio').textContent = folio;
             document.getElementById('lblCct').textContent = res.cct;
-            document.getElementById('lblMunicipio').textContent = res.municipio;
-            document.getElementById('lblPrograma').textContent = res.programa;
-            document.getElementById('lblHora').textContent = `${res.fecha} - ${res.hora}`;
+            document.getElementById('lblHora').textContent = res.hora;
+            
+            // Ocultar la notificación automáticamente a los 2 segundos para no estorbar el siguiente escaneo
+            setTimeout(() => { alerta.classList.add('hidden'); }, 2000);
         }
 
         function mostrarError(mensaje) {
             document.getElementById('alertaError').classList.remove('hidden');
             document.getElementById('lblErrorMsg').textContent = mensaje;
-            // Reproducir una pequeña alerta visual o sonora si se desea
         }
 
         function ocultarAlertas() {
@@ -189,9 +231,7 @@
             document.getElementById('contadorSesion').textContent = `${totalSesion} registradas`;
 
             const tbody = document.getElementById('tablaHistorial');
-            if (totalSesion === 1) {
-                tbody.innerHTML = ""; // Limpiar texto de "no hay registros"
-            }
+            if (totalSesion === 1) tbody.innerHTML = "";
 
             const tr = document.createElement('tr');
             tr.className = "hover:bg-slate-50";
@@ -201,7 +241,60 @@
                 <td class="p-2 font-semibold text-gray-900">${res.nombre}</td>
                 <td class="p-2 font-mono text-[#691C32] font-bold">${res.cct}</td>
             `;
-            tbody.prepend(tr); // Agregar arriba el más reciente
+            tbody.prepend(tr);
+        }
+
+        // FUNCIONES DE CÁMARA (Opción B)
+        async function iniciarEscanner() {
+            const video = document.getElementById('videoPreview');
+            const status = document.getElementById('scannerStatus');
+            status.innerText = "Iniciando cámara...";
+
+            try {
+                videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                video.srcObject = videoStream;
+                video.setAttribute("playsinline", true);
+                video.play();
+                requestAnimationFrame(escanearFrame);
+            } catch (err) {
+                status.innerText = "Error al acceder a la cámara.";
+            }
+        }
+
+        function escanearFrame() {
+            const video = document.getElementById('videoPreview');
+            const canvasElement = document.getElementById('canvasCanvas');
+
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                canvasElement.height = video.videoHeight;
+                canvasElement.width = video.videoWidth;
+                const canvas = canvasElement.getContext("2d");
+                canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+                
+                const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+
+                if (code && !procesando) {
+                    let codigoDetectado = code.data.trim();
+                    if (codigoDetectado.length >= 10) {
+                        procesando = true;
+                        enviarSalidaServidor(codigoDetectado);
+                        // Pausa de 1.5 segundos para evitar lecturas duplicadas continuas con la cámara
+                        setTimeout(() => { procesando = false; }, 1500);
+                    }
+                }
+            }
+            if (videoStream) {
+                scanningInterval = requestAnimationFrame(escanearFrame);
+            }
+        }
+
+        function detenerEscanner() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+            }
+            if (scanningInterval) cancelAnimationFrame(scanningInterval);
         }
     </script>
 </body>
