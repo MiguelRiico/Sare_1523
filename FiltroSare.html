@@ -152,8 +152,16 @@
             <canvas id="canvasCanvas" class="hidden"></canvas>
         </div>
 
-        <!-- Consola de Depuración -->
-        <div class="bg-slate-900 text-emerald-400 font-mono text-xs rounded-xl p-4 shadow-inner overflow-x-auto">
+        <!-- CONTROL DE DEPURACIÓN (Casilla) -->
+        <div class="flex items-center justify-between px-1">
+            <label class="flex items-center space-x-2 text-xs font-semibold text-slate-600 cursor-pointer select-none">
+                <input type="checkbox" id="toggleDebug" onchange="toggleConsola()" class="rounded border-slate-300 text-[#691C32] focus:ring-[#691C32] w-4 h-4">
+                <span>Mostrar Consola de Depuración</span>
+            </label>
+        </div>
+
+        <!-- Consola de Depuración (Oculta por defecto) -->
+        <div id="debugBox" class="bg-slate-900 text-emerald-400 font-mono text-xs rounded-xl p-4 shadow-inner overflow-x-auto hidden">
             <p class="text-slate-400 mb-1">🔍 Consola de Depuración:</p>
             <div id="consoleOutput">Esperando consulta...</div>
         </div>
@@ -181,7 +189,7 @@
 
     <!-- SCRIPT DE CONTROL -->
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbwfnS_vRrJdGsplAvWDkDSnW39jOrd6y7O-H_6CwtokkpYSlhZFrKEAEzZBNmGtLTXi/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbzsVTpgnk-F0fHalvQblj_c3txt8uWJfrGiLaj5MGShjRSii9xrRO4YXJSEEhsKiNMI/exec";
 
         let videoStream = null;
         let scanningInterval = null;
@@ -213,6 +221,16 @@
             } else if (modo === 'instrucciones') {
                 sInstrucciones.classList.remove('hidden');
                 tInstrucciones.className = "py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-[#691C32] text-white shadow transition text-center";
+            }
+        }
+
+        function toggleConsola() {
+            const debugBox = document.getElementById('debugBox');
+            const checkbox = document.getElementById('toggleDebug');
+            if (checkbox.checked) {
+                debugBox.classList.remove('hidden');
+            } else {
+                debugBox.classList.add('hidden');
             }
         }
 
@@ -278,7 +296,7 @@
                 <p><strong>CURP:</strong> ${p.curp}</p>
                 <p><strong>FOLIO:</strong> ${p.folio}</p>
                 <p><strong>PROGRAMA:</strong> ${p.programa}</p>
-                <p><strong>CCT:</strong> ${p.cct}</p>
+                <p><strong>CCT:</strong> <span class="text-base font-bold text-[#691C32]">${p.cct}</span></p>
                 <p><strong>MUNICIPIO:</strong> ${p.municipio}</p>
                 <p><strong>ESTATUS:</strong> <span class="bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded">${p.estatus}</span></p>
                 <p><strong>PERIODO:</strong> ${p.periodo}</p>
@@ -293,14 +311,21 @@
 
             lista.forEach(item => {
                 const div = document.createElement('div');
-                div.className = "py-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 hover:bg-slate-50 px-2 rounded cursor-pointer";
+                div.className = "py-3.5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 hover:bg-slate-50 px-2 rounded cursor-pointer";
                 div.innerHTML = `
-                    <div>
-                        <p class="font-bold text-gray-800 text-sm">${item.nombreCompleto}</p>
-                        <p class="text-xs text-gray-500 font-mono">CURP: ${item.curp} | CCT: ${item.cct}</p>
+                    <div class="space-y-1">
+                        <p class="font-bold text-gray-900 text-sm">${item.nombreCompleto}</p>
+                        <p class="text-xs font-mono">
+                            CURP: <span class="text-slate-700">${item.curp}</span> | 
+                            CCT: <strong class="text-sm text-[#691C32]">${item.cct}</strong>
+                        </p>
+                        <p class="text-xs text-slate-600">
+                            Municipio: <span class="font-medium">${item.municipio}</span> | 
+                            Programa: <span class="font-medium">${item.programa}</span>
+                        </p>
                         <p class="text-[11px] text-amber-700 font-semibold">Vigencia: ${item.vigencia}</p>
                     </div>
-                    <button onclick="seleccionarDeLista('${item.curp}')" class="btn-gob text-white text-xs px-3 py-1.5 rounded shadow">
+                    <button onclick="seleccionarDeLista('${item.curp}')" class="btn-gob text-white text-xs px-3.5 py-2 rounded shadow">
                         Ver Detalles
                     </button>
                 `;
@@ -397,7 +422,7 @@
         function limpiarTodo() {
             document.getElementById('curpInput').value = '';
             document.getElementById('nombreInput').value = '';
-            document.getElementById('consoleOutput').innerText = 'Consola limpia. Esperando consulta...';
+            document.getElementById('consoleOutput').innerText = 'Esperando consulta...';
             ocultarResultados();
             detenerEscanner();
         }
