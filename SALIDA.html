@@ -6,7 +6,8 @@
     <title>Control de Salidas - SARE 1523</title>
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <!-- Nueva librería hiper-optimizada para códigos de barras y QR en cámara -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         body { font-family: 'Public Sans', sans-serif; background-color: #f8fafc; }
         .bg-gob-primary { background-color: #691C32; }
@@ -66,17 +67,15 @@
             <p class="text-xs text-slate-400">El sistema registra de inmediato y limpia la pantalla para el siguiente escaneo.</p>
         </div>
 
-        <!-- OPCIÓN B: ESCANEO POR CÁMARA DE CELULAR -->
+        <!-- OPCIÓN B: ESCANEO POR CÁMARA DE CELULAR (Html5-Qrcode) -->
         <div id="seccionCamara" class="bg-black rounded-xl p-4 shadow-inner text-center hidden space-y-3">
             <div class="flex justify-between items-center text-white px-2">
-                <span class="text-xs font-mono">Apunta la cámara al código de barras o QR</span>
+                <span class="text-xs font-mono">Apunta la cámara al código de barras</span>
                 <button onclick="detenerEscanner()" class="bg-red-600 hover:bg-red-700 text-xs px-3 py-1 rounded font-bold">Cerrar Cámara</button>
             </div>
-            <div class="relative max-w-sm mx-auto overflow-hidden rounded-lg border-2 border-amber-500">
-                <video id="videoPreview" class="w-full h-64 object-cover"></video>
-            </div>
-            <p id="scannerStatus" class="text-xs text-amber-400 font-mono">Buscando código...</p>
-            <canvas id="canvasCanvas" class="hidden"></canvas>
+            <!-- Contenedor donde la librería proyecta la cámara de forma nativa y fluida -->
+            <div id="reader" class="max-w-sm mx-auto overflow-hidden rounded-lg border-2 border-amber-500 bg-black"></div>
+            <p id="scannerStatus" class="text-xs text-amber-400 font-mono">Cámara inactiva</p>
         </div>
 
         <!-- NOTIFICACIÓN DE ÉXITO RÁPIDA -->
@@ -131,8 +130,7 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbzQmLCh-VAoKisSBQHnZi_nKew2gYKnze0ldWvdetDeacFky8h0uuC-O-G_pQ/exec";
         let totalSesion = 0;
         let procesando = false;
-        let videoStream = null;
-        let scanningInterval = null;
+        let html5QrCode = null;
 
         function cambiarModo(modo) {
             detenerEscanner();
@@ -169,7 +167,6 @@
             if (procesando) return;
             let codigo = input.value.trim();
             
-            // Cuando detecte el código completo (ej. 16 caracteres o más)
             if (codigo.length >= 16) {
                 procesando = true;
                 enviarSalidaServidor(codigo);
@@ -179,7 +176,7 @@
         async function enviarSalidaServidor(codigo) {
             ocultarAlertas();
             const input = document.getElementById("codigoInput");
-            input.value = "Guardando...";
+            if(input) input.value = "Guardando...";
 
             try {
                 const response = await fetch(API_URL, {
@@ -198,8 +195,10 @@
             } catch (err) {
                 mostrarError("Error de conexión con el servidor.");
             } finally {
-                input.value = "";
-                input.focus();
+                if(input) {
+                    input.value = "";
+                    input.focus();
+                }
                 procesando = false;
             }
         }
@@ -212,7 +211,6 @@
             document.getElementById('lblCct').textContent = res.cct;
             document.getElementById('lblHora').textContent = res.hora;
             
-            // Ocultar la notificación automáticamente a los 2 segundos para no estorbar el siguiente escaneo
             setTimeout(() => { alerta.classList.add('hidden'); }, 2000);
         }
 
@@ -244,57 +242,54 @@
             tbody.prepend(tr);
         }
 
-        // FUNCIONES DE CÁMARA (Opción B)
+        // FUNCIONES DE CÁMARA CON Html5-Qrcode (Opción B)
         async function iniciarEscanner() {
-            const video = document.getElementById('videoPreview');
             const status = document.getElementById('scannerStatus');
-            status.innerText = "Iniciando cámara...";
+            status.innerText = "Iniciando cámara trasera...";
+
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode("reader");
+            }
+
+            const config = { fps: 15, qrbox: { width: 280, height: 150 } };
 
             try {
-                videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-                video.srcObject = videoStream;
-                video.setAttribute("playsinline", true);
-                video.play();
-                requestAnimationFrame(escanearFrame);
-            } catch (err) {
-                status.innerText = "Error al acceder a la cámara.";
-            }
-        }
-
-        function escanearFrame() {
-            const video = document.getElementById('videoPreview');
-            const canvasElement = document.getElementById('canvasCanvas');
-
-            if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                canvasElement.height = video.videoHeight;
-                canvasElement.width = video.videoWidth;
-                const canvas = canvasElement.getContext("2d");
-                canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
-                
-                const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
-                const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
-
-                if (code && !procesando) {
-                    let codigoDetectado = code.data.trim();
-                    if (codigoDetectado.length >= 10) {
-                        procesando = true;
-                        enviarSalidaServidor(codigoDetectado);
-                        // Pausa de 1.5 segundos para evitar lecturas duplicadas continuas con la cámara
-                        setTimeout(() => { procesando = false; }, 1500);
+                await html5QrCode.start(
+                    { facingMode: "environment" }, 
+                    config, 
+                    (decodedText, decodedResult) => {
+                        // Éxito al leer el código de barras o QR
+                        let codigoDetectado = decodedText.trim();
+                        if (codigoDetectado.length >= 10 && !procesando) {
+                            procesando = true;
+                            status.innerText = `¡Leído: ${codigoDetectado}! Registrando...`;
+                            enviarSalidaServidor(codigoDetectado);
+                            
+                            // Pausa breve de 1.5s para evitar ráfagas duplicadas con la cámara
+                            setTimeout(() => { 
+                                procesando = false; 
+                                status.innerText = "Buscando código de barras...";
+                            }, 1500);
+                        }
+                    },
+                    (errorMessage) => {
+                        // Ignoramos errores de cuadros por segundo donde no se ve el código todavía
                     }
-                }
-            }
-            if (videoStream) {
-                scanningInterval = requestAnimationFrame(escanearFrame);
+                );
+                status.innerText = "Cámara activa. Apunte al código de barras.";
+            } catch (err) {
+                status.innerText = "Error: No se pudo acceder a la cámara o permisos denegados.";
             }
         }
 
         function detenerEscanner() {
-            if (videoStream) {
-                videoStream.getTracks().forEach(track => track.stop());
-                videoStream = null;
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => {
+                    document.getElementById('scannerStatus').innerText = "Cámara detenida.";
+                }).catch(err => {
+                    console.log("Error al detener la cámara", err);
+                });
             }
-            if (scanningInterval) cancelAnimationFrame(scanningInterval);
         }
     </script>
 </body>
