@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filtro Nominal SARE 1523</title>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <style>
+        body { font-family: 'Public Sans', sans-serif; background-color: #f8fafc; }
+        .bg-gob-primary { background-color: #691C32; }
+        .text-gob-primary { color: #691C32; }
+        .border-gob-primary { border-color: #691C32; }
+        .btn-gob { background-color: #5b1328; transition: background-color 0.2s; }
+        .btn-gob:hover { background-color: #440e1e; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+    <script>
+        if (!sessionStorage.getItem("sare_user")) {
+            window.location.href = "index.html";
+        }
+    </script>
+
+    <!-- HEADER -->
+    <header class="bg-gob-primary text-white shadow-md">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <div class="bg-white text-gob-primary font-bold px-3 py-2 text-xs rounded shadow">
+                    GOBIERNO DE MÉXICO
+                </div>
+                <div>
+                    <h1 class="text-lg font-semibold leading-tight">Filtro Nominal - SARE 1523</h1>
+                    <p class="text-xs text-red-200">Módulo de Atención en Ventanilla</p>
+                </div>
+            </div>
+            <button onclick="limpiarTodo()" class="bg-amber-500 hover:bg-amber-600 text-white font-medium text-xs px-4 py-2 rounded shadow">
+                Reiniciar
+            </button>
+        </div>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="max-w-4xl w-full mx-auto p-4 flex-grow space-y-6">
+
+        <!-- Selector de Pestañas (Modo de Búsqueda + Instrucciones) -->
+        <div class="bg-white rounded-xl shadow-md p-2 border-t-4 border-gob-primary grid grid-cols-3 gap-2">
+            <button onclick="cambiarModo('curp')" id="tabCurp" class="py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-[#691C32] text-white shadow transition text-center">
+                🔍 Búsqueda CURP / QR
+            </button>
+            <button onclick="cambiarModo('nombre')" id="tabNombre" class="py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center">
+                👤 Buscar por Nombre
+            </button>
+            <button onclick="cambiarModo('instrucciones')" id="tabInstrucciones" class="py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center">
+                📖 Instrucciones
+            </button>
+        </div>
+
+        <!-- 1. SECCIÓN BÚSQUEDA POR CURP -->
+        <div id="seccionCurp" class="bg-white rounded-xl shadow-md p-6 border border-slate-200 space-y-4">
+            <h2 class="text-sm font-bold text-gray-700 uppercase">Búsqueda Rápida por CURP o Código QR</h2>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <input type="text" id="curpInput" maxlength="18" placeholder="Ingrese o escanee los 18 caracteres del CURP" 
+                    oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '')"
+                    class="flex-grow uppercase tracking-wider font-mono border border-gray-300 rounded-lg px-4 py-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#691C32]">
+                <div class="flex gap-2">
+                    <button onclick="consultarCurp()" class="btn-gob text-white font-medium px-6 py-3 rounded-lg text-sm shadow">
+                        Buscar
+                    </button>
+                </div>
+            </div>
+            <button onclick="iniciarEscanner()" class="w-full bg-[#b2571c] hover:bg-[#9a4b17] text-white font-medium py-3 px-4 rounded-lg flex items-center justify-center space-x-2 shadow transition">
+                <span>📷 Escanear QR con Cámara</span>
+            </button>
+        </div>
+
+        <!-- 2. SECCIÓN BÚSQUEDA POR NOMBRE -->
+        <div id="seccionNombre" class="bg-white rounded-xl shadow-md p-6 border border-slate-200 space-y-4 hidden">
+            <h2 class="text-sm font-bold text-gray-700 uppercase">Búsqueda por Coincidencia de Nombre</h2>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <input type="text" id="nombreInput" placeholder="Ej. JOSE MIGUEL (o parte del nombre)" 
+                    oninput="this.value = this.value.toUpperCase()"
+                    class="flex-grow uppercase tracking-wider border border-gray-300 rounded-lg px-4 py-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#691C32]">
+                <button onclick="consultarNombre()" class="btn-gob text-white font-medium px-6 py-3 rounded-lg text-sm shadow">
+                    Buscar Coincidencias
+                </button>
+            </div>
+            <p class="text-xs text-slate-400">Escriba el nombre o apellido para desplegar la lista de opciones disponibles.</p>
+        </div>
+
+        <!-- 3. SECCIÓN INSTRUCCIONES (Ayuda visual) -->
+        <div id="seccionInstrucciones" class="bg-white rounded-xl shadow-md p-6 border border-slate-200 space-y-6 hidden">
+            <div>
+                <h2 class="text-base font-bold text-gray-800 flex items-center gap-2">
+                    <span>📖</span> Guía de Uso Rápido para Ventanilla
+                </h2>
+                <p class="text-xs text-slate-500 mt-1">Siga estos pasos según el caso del ciudadano que solicita atención:</p>
+            </div>
+
+            <div class="space-y-4 text-sm text-gray-700">
+                <!-- Paso 1 -->
+                <div class="flex gap-3 bg-slate-50 p-4 rounded-lg border border-slate-100">
+                    <div class="bg-[#691C32] text-white font-bold w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs">1</div>
+                    <div class="space-y-1">
+                        <p class="font-bold text-gray-900">Opción A: Escanear Código QR del CURP</p>
+                        <p class="text-xs text-slate-600">Si el ciudadano trae su documento con código QR, presione el botón <span class="font-semibold text-[#b2571c]">"Escanear QR con Cámara"</span> y apunte hacia el código. El sistema detectará automáticamente los 18 caracteres y arrojará la información sin teclear nada.</p>
+                    </div>
+                </div>
+
+                <!-- Paso 2 -->
+                <div class="flex gap-3 bg-slate-50 p-4 rounded-lg border border-slate-100">
+                    <div class="bg-[#691C32] text-white font-bold w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs">2</div>
+                    <div class="space-y-1">
+                        <p class="font-bold text-gray-900">Opción B: Escribir el CURP manualmente</p>
+                        <p class="text-xs text-slate-600">Si conoce el CURP pero no hay lector disponible, escríbalo directamente en la barra de búsqueda de la pestaña principal y dé clic en <span class="font-semibold text-[#691C32]">"Buscar"</span>.</p>
+                    </div>
+                </div>
+
+                <!-- Paso 3 -->
+                <div class="flex gap-3 bg-slate-50 p-4 rounded-lg border border-slate-100">
+                    <div class="bg-[#691C32] text-white font-bold w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs">3</div>
+                    <div class="space-y-1">
+                        <p class="font-bold text-gray-900">Opción C: Buscar por Nombre y Apellido</p>
+                        <p class="text-xs text-slate-600">Si no trae CURP o no lo recuerda, cambie a la pestaña <span class="font-semibold text-slate-800">"Buscar por Nombre"</span>, escriba su nombre y seleccione el registro correcto de la lista que aparecerá en pantalla.</p>
+                    </div>
+                </div>
+
+                <!-- Paso 4 -->
+                <div class="flex gap-3 bg-red-50 p-4 rounded-lg border border-red-100">
+                    <div class="bg-red-600 text-white font-bold w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs">⚠️</div>
+                    <div class="space-y-1">
+                        <p class="font-bold text-red-900">¿Qué pasa si aparece "No encontrado"?</p>
+                        <p class="text-xs text-red-700">Si el sistema arroja la alerta de que no existe registro por ninguna vía, oriente al ciudadano indicándole amablemente: <strong>"No se encuentra registrado en este listado. Favor de pasar a ventanilla de atención general."</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL DE CÁMARA -->
+        <div id="scannerContainer" class="bg-black rounded-xl p-4 shadow-inner text-center hidden space-y-3">
+            <div class="flex justify-between items-center text-white px-2">
+                <span class="text-xs font-mono">Apunta la cámara al código QR</span>
+                <button onclick="detenerEscanner()" class="bg-red-600 hover:bg-red-700 text-xs px-3 py-1 rounded font-bold">Cerrar</button>
+            </div>
+            <div class="relative max-w-sm mx-auto overflow-hidden rounded-lg border-2 border-amber-500">
+                <video id="videoPreview" class="w-full h-64 object-cover"></video>
+            </div>
+            <p id="scannerStatus" class="text-xs text-amber-400 font-mono">Buscando código QR...</p>
+            <canvas id="canvasCanvas" class="hidden"></canvas>
+        </div>
+
+        <!-- RESULTADOS (Tarjeta Individual o Lista de Coincidencias) -->
+        <div id="resultadoCard" class="bg-white rounded-xl shadow-md p-6 border-l-8 border-gob-primary hidden relative space-y-4">
+            <div class="flex justify-between items-start">
+                <h3 class="text-xs font-bold tracking-wider text-gray-400 uppercase">Resultado de la Búsqueda</h3>
+                <span id="badgeVigencia" class="text-xs font-bold px-2.5 py-1 rounded bg-amber-100 text-amber-800"></span>
+            </div>
+            <div id="resultadoContent" class="space-y-2 text-sm text-gray-700"></div>
+        </div>
+
+        <!-- LISTA DE COINCIDENCIAS (Cuando se busca por nombre) -->
+        <div id="listaContainer" class="bg-white rounded-xl shadow-md p-6 border border-slate-200 hidden space-y-3">
+            <h3 class="text-sm font-bold text-gray-800">Coincidencias encontradas:</h3>
+            <div id="listaResultados" class="divide-y divide-slate-100 max-h-96 overflow-y-auto"></div>
+        </div>
+
+    </main>
+
+    <footer class="bg-slate-100 border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+        Coordinación Nacional de Becas para el Bienestar • Región 1523 (SARE Tultitlán)
+    </footer>
+
+    <!-- SCRIPT DE CONTROL -->
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbzsVTpgnk-F0fHalvQblj_c3txt8uWJfrGiLaj5MGShjRSii9xrRO4YXJSEEhsKiNMI/exec";
+
+        let videoStream = null;
+        let scanningInterval = null;
+
+        function cambiarModo(modo) {
+            limpiarTodo();
+            const sCurp = document.getElementById('seccionCurp');
+            const sNombre = document.getElementById('seccionNombre');
+            const sInstrucciones = document.getElementById('seccionInstrucciones');
+            
+            const tCurp = document.getElementById('tabCurp');
+            const tNombre = document.getElementById('tabNombre');
+            const tInstrucciones = document.getElementById('tabInstrucciones');
+
+            // Reset tabs
+            tCurp.className = "py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center";
+            tNombre.className = "py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center";
+            tInstrucciones.className = "py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center";
+
+            sCurp.classList.add('hidden');
+            sNombre.classList.add('hidden');
+            sInstrucciones.classList.add('hidden');
+
+            if (modo === 'curp') {
+                sCurp.classList.remove('hidden');
+                tCurp.className = "py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-[#691C32] text-white shadow transition text-center";
+            } else if (modo === 'nombre') {
+                sNombre.classList.remove('hidden');
+                tNombre.className = "py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-[#691C32] text-white shadow transition text-center";
+            } else if (modo === 'instrucciones') {
+                sInstrucciones.classList.remove('hidden');
+                tInstrucciones.className = "py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-[#691C32] text-white shadow transition text-center";
+            }
+        }
+
+        async function consultarCurp() {
+            let curp = document.getElementById('curpInput').value.trim().toUpperCase();
+            if (curp.length !== 18) {
+                alert("El CURP debe contener exactamente 18 caracteres.");
+                return;
+            }
+            ejecutarBusquedaAPI(`?curp=${encodeURIComponent(curp)}`);
+        }
+
+        async function consultarNombre() {
+            let nombre = document.getElementById('nombreInput').value.trim();
+            if (nombre.length < 3) {
+                alert("Ingrese al menos 3 caracteres para buscar por nombre.");
+                return;
+            }
+            ejecutarBusquedaAPI(`?nombre=${encodeURIComponent(nombre)}`);
+        }
+
+        async function ejecutarBusquedaAPI(queryParam) {
+            ocultarResultados();
+            try {
+                const response = await fetch(`${API_URL}${queryParam}`);
+                const data = await response.json();
+
+                if (!data.encontrado) {
+                    mostrarNoEncontrado();
+                    return;
+                }
+
+                if (data.tipo === "unico") {
+                    mostrarResultadoUnico(data);
+                } else if (data.tipo === "lista") {
+                    mostrarListaCoincidencias(data.resultados);
+                }
+
+            } catch (error) {
+                alert("Error de conexión con el servidor.");
+            }
+        }
+
+        function mostrarResultadoUnico(p) {
+            const card = document.getElementById('resultadoCard');
+            const content = document.getElementById('resultadoContent');
+            const badge = document.getElementById('badgeVigencia');
+
+            card.classList.remove('hidden', 'border-red-500');
+            card.classList.add('border-gob-primary');
+            badge.textContent = `Vigencia: ${p.vigencia || 'N/D'}`;
+
+            content.innerHTML = `
+                <p><strong>NOMBRE:</strong> <span class="text-gray-900 font-bold">${p.nombreCompleto}</span></p>
+                <p><strong>CURP:</strong> ${p.curp}</p>
+                <p><strong>FOLIO:</strong> ${p.folio}</p>
+                <p><strong>PROGRAMA:</strong> ${p.programa}</p>
+                <p><strong>CCT:</strong> ${p.cct}</p>
+                <p><strong>MUNICIPIO:</strong> ${p.municipio}</p>
+                <p><strong>ESTATUS:</strong> <span class="bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded">${p.estatus}</span></p>
+                <p><strong>PERIODO:</strong> ${p.periodo}</p>
+            `;
+        }
+
+        function mostrarListaCoincidencias(lista) {
+            const container = document.getElementById('listaContainer');
+            const listaRes = document.getElementById('listaResultados');
+            container.classList.remove('hidden');
+            listaRes.innerHTML = "";
+
+            lista.forEach(item => {
+                const div = document.createElement('div');
+                div.className = "py-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 hover:bg-slate-50 px-2 rounded cursor-pointer";
+                div.innerHTML = `
+                    <div>
+                        <p class="font-bold text-gray-800 text-sm">${item.nombreCompleto}</p>
+                        <p class="text-xs text-gray-500 font-mono">CURP: ${item.curp} | CCT: ${item.cct}</p>
+                        <p class="text-[11px] text-amber-700 font-semibold">Vigencia: ${item.vigencia}</p>
+                    </div>
+                    <button onclick="seleccionarDeLista('${item.curp}')" class="btn-gob text-white text-xs px-3 py-1.5 rounded shadow">
+                        Ver Detalles
+                    </button>
+                `;
+                listaRes.appendChild(div);
+            });
+        }
+
+        function seleccionarDeLista(curp) {
+            document.getElementById('listaContainer').classList.add('hidden');
+            document.getElementById('curpInput').value = curp;
+            ejecutarBusquedaAPI(`?curp=${encodeURIComponent(curp)}`);
+        }
+
+        function mostrarNoEncontrado() {
+            const card = document.getElementById('resultadoCard');
+            const content = document.getElementById('resultadoContent');
+            const badge = document.getElementById('badgeVigencia');
+
+            card.classList.remove('hidden', 'border-gob-primary');
+            card.classList.add('border-red-500');
+            badge.textContent = "SIN REGISTRO";
+
+            content.innerHTML = `
+                <div class="bg-red-50 border border-red-200 p-4 rounded-lg text-red-700 text-center space-y-2">
+                    <p class="font-bold text-lg">❌ No encontrado</p>
+                    <p class="text-base font-semibold">Favor de pasar a ventanilla</p>
+                </div>
+            `;
+        }
+
+        function ocultarResultados() {
+            document.getElementById('resultadoCard').classList.add('hidden');
+            document.getElementById('listaContainer').classList.add('hidden');
+        }
+
+        async function iniciarEscanner() {
+            const container = document.getElementById('scannerContainer');
+            const video = document.getElementById('videoPreview');
+            const status = document.getElementById('scannerStatus');
+            
+            container.classList.remove('hidden');
+            status.innerText = "Iniciando cámara trasera...";
+
+            try {
+                videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                video.srcObject = videoStream;
+                video.setAttribute("playsinline", true);
+                video.play();
+                requestAnimationFrame(escanearFrame);
+            } catch (err) {
+                status.innerText = "Error: No se pudo acceder a la cámara.";
+            }
+        }
+
+        function escanearFrame() {
+            const video = document.getElementById('videoPreview');
+            const canvasElement = document.getElementById('canvasCanvas');
+            const status = document.getElementById('scannerStatus');
+
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                canvasElement.height = video.videoHeight;
+                canvasElement.width = video.videoWidth;
+                const canvas = canvasElement.getContext("2d");
+                canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+                
+                const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+
+                if (code) {
+                    let textoEscaneado = code.data.trim().toUpperCase();
+                    if (textoEscaneado.length >= 18) {
+                        let curpExtraido = textoEscaneado.substring(0, 18);
+                        document.getElementById('curpInput').value = curpExtraido;
+                        detenerEscanner();
+                        consultarCurp();
+                        return;
+                    }
+                }
+            }
+            if (videoStream) {
+                scanningInterval = requestAnimationFrame(escanearFrame);
+            }
+        }
+
+        function detenerEscanner() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+            }
+            if (scanningInterval) cancelAnimationFrame(scanningInterval);
+            document.getElementById('scannerContainer').classList.add('hidden');
+        }
+
+        function limpiarTodo() {
+            document.getElementById('curpInput').value = '';
+            document.getElementById('nombreInput').value = '';
+            ocultarResultados();
+            detenerEscanner();
+        }
+    </script>
+</body>
+</html>
