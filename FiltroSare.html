@@ -81,13 +81,13 @@
             <h2 class="text-sm font-bold text-gray-700 uppercase">Búsqueda por Coincidencia de Nombre</h2>
             <div class="flex flex-col sm:flex-row gap-3">
                 <input type="text" id="nombreInput" placeholder="Ej. JOSE MIGUEL (o parte del nombre)" 
-                    oninput="this.value = this.value.toUpperCase()"
+                    oninput="this.value = this.value.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Z0-9 ]/g, '')"
                     class="flex-grow uppercase tracking-wider border border-gray-300 rounded-lg px-4 py-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#691C32]">
                 <button onclick="consultarNombre()" class="btn-gob text-white font-medium px-6 py-3 rounded-lg text-sm shadow">
                     Buscar Coincidencias
                 </button>
             </div>
-            <p class="text-xs text-slate-400">Escriba el nombre o apellido para desplegar la lista de opciones disponibles.</p>
+            <p class="text-xs text-slate-400">Escriba el nombre o apellido (el sistema elimina automáticamente acentos y símbolos).</p>
         </div>
 
         <!-- 3. SECCIÓN INSTRUCCIONES (Ayuda visual) -->
@@ -100,39 +100,35 @@
             </div>
 
             <div class="space-y-4 text-sm text-gray-700">
-                <!-- Paso 1 -->
                 <div class="flex gap-3 bg-slate-50 p-4 rounded-lg border border-slate-100">
                     <div class="bg-[#691C32] text-white font-bold w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs">1</div>
                     <div class="space-y-1">
                         <p class="font-bold text-gray-900">Opción A: Escanear Código QR del CURP</p>
-                        <p class="text-xs text-slate-600">Si el ciudadano trae su documento con código QR, presione el botón <span class="font-semibold text-[#b2571c]">"Escanear QR con Cámara"</span> y apunte hacia el código. El sistema detectará automáticamente los 18 caracteres y arrojará la información sin teclear nada.</p>
+                        <p class="text-xs text-slate-600">Presione <span class="font-semibold text-[#b2571c]">"Escanear QR con Cámara"</span> y apunte hacia el código del documento para capturar automáticamente el CURP.</p>
                     </div>
                 </div>
 
-                <!-- Paso 2 -->
                 <div class="flex gap-3 bg-slate-50 p-4 rounded-lg border border-slate-100">
                     <div class="bg-[#691C32] text-white font-bold w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs">2</div>
                     <div class="space-y-1">
                         <p class="font-bold text-gray-900">Opción B: Escribir el CURP manualmente</p>
-                        <p class="text-xs text-slate-600">Si conoce el CURP pero no hay lector disponible, escríbalo directamente en la barra de búsqueda de la pestaña principal y dé clic en <span class="font-semibold text-[#691C32]">"Buscar"</span>.</p>
+                        <p class="text-xs text-slate-600">Ingrese directamente los 18 caracteres en la barra de búsqueda y dé clic en <span class="font-semibold text-[#691C32]">"Buscar"</span>.</p>
                     </div>
                 </div>
 
-                <!-- Paso 3 -->
                 <div class="flex gap-3 bg-slate-50 p-4 rounded-lg border border-slate-100">
                     <div class="bg-[#691C32] text-white font-bold w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs">3</div>
                     <div class="space-y-1">
                         <p class="font-bold text-gray-900">Opción C: Buscar por Nombre y Apellido</p>
-                        <p class="text-xs text-slate-600">Si no trae CURP o no lo recuerda, cambie a la pestaña <span class="font-semibold text-slate-800">"Buscar por Nombre"</span>, escriba su nombre y seleccione el registro correcto de la lista que aparecerá en pantalla.</p>
+                        <p class="text-xs text-slate-600">Cambie a la pestaña <span class="font-semibold text-slate-800">"Buscar por Nombre"</span>, escriba el nombre y seleccione el registro correcto de la lista resultante.</p>
                     </div>
                 </div>
 
-                <!-- Paso 4 -->
                 <div class="flex gap-3 bg-red-50 p-4 rounded-lg border border-red-100">
                     <div class="bg-red-600 text-white font-bold w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs">⚠️</div>
                     <div class="space-y-1">
                         <p class="font-bold text-red-900">¿Qué pasa si aparece "No encontrado"?</p>
-                        <p class="text-xs text-red-700">Si el sistema arroja la alerta de que no existe registro por ninguna vía, oriente al ciudadano indicándole amablemente: <strong>"No se encuentra registrado en este listado. Favor de pasar a ventanilla de atención general."</strong></p>
+                        <p class="text-xs text-red-700">Indique amablemente al ciudadano: <strong>"No se encuentra registrado en este listado. Favor de pasar a ventanilla."</strong></p>
                     </div>
                 </div>
             </div>
@@ -151,7 +147,7 @@
             <canvas id="canvasCanvas" class="hidden"></canvas>
         </div>
 
-        <!-- RESULTADOS (Tarjeta Individual o Lista de Coincidencias) -->
+        <!-- RESULTADOS -->
         <div id="resultadoCard" class="bg-white rounded-xl shadow-md p-6 border-l-8 border-gob-primary hidden relative space-y-4">
             <div class="flex justify-between items-start">
                 <h3 class="text-xs font-bold tracking-wider text-gray-400 uppercase">Resultado de la Búsqueda</h3>
@@ -160,7 +156,7 @@
             <div id="resultadoContent" class="space-y-2 text-sm text-gray-700"></div>
         </div>
 
-        <!-- LISTA DE COINCIDENCIAS (Cuando se busca por nombre) -->
+        <!-- LISTA DE COINCIDENCIAS -->
         <div id="listaContainer" class="bg-white rounded-xl shadow-md p-6 border border-slate-200 hidden space-y-3">
             <h3 class="text-sm font-bold text-gray-800">Coincidencias encontradas:</h3>
             <div id="listaResultados" class="divide-y divide-slate-100 max-h-96 overflow-y-auto"></div>
@@ -174,7 +170,7 @@
 
     <!-- SCRIPT DE CONTROL -->
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbwAKICQppp6wU5JdEBQn4u9CCIsZCe7hAXRNaQALF5_8ByrQaar9dFkeGP4lGPzIzAi/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbwK5Ypo9_kmtSJVyvGjCpOm7CeZr7RO3IHxoCPEzb-61re-8VPr8bgrLMpp8yqBNxVw/exec";
 
         let videoStream = null;
         let scanningInterval = null;
@@ -189,7 +185,6 @@
             const tNombre = document.getElementById('tabNombre');
             const tInstrucciones = document.getElementById('tabInstrucciones');
 
-            // Reset tabs
             tCurp.className = "py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center";
             tNombre.className = "py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center";
             tInstrucciones.className = "py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center";
