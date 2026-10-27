@@ -14,6 +14,11 @@
         .border-gob-primary { border-color: #691C32; }
         .btn-gob { background-color: #5b1328; transition: background-color 0.2s; }
         .btn-gob:hover { background-color: #440e1e; }
+        /* Animación de puntos suspensivos */
+        @keyframes blink { 0% { opacity: .2; } 20% { opacity: 1; } 100% { opacity: .2; } }
+        .saving span { animation-name: blink; animation-duration: 1.4s; animation-iteration-count: infinite; animation-fill-mode: both; }
+        .saving span:nth-child(2) { animation-delay: .2s; }
+        .saving span:nth-child(3) { animation-delay: .4s; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between">
@@ -45,7 +50,7 @@
     <!-- CONTENIDO PRINCIPAL -->
     <main class="max-w-4xl w-full mx-auto p-4 flex-grow space-y-6">
 
-        <!-- Selector de Pestañas (Modo de Búsqueda + Instrucciones) -->
+        <!-- Selector de Pestañas -->
         <div class="bg-white rounded-xl shadow-md p-2 border-t-4 border-gob-primary grid grid-cols-3 gap-2">
             <button onclick="cambiarModo('curp')" id="tabCurp" class="py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-[#691C32] text-white shadow transition text-center">
                 🔍 Búsqueda CURP / QR
@@ -90,7 +95,7 @@
             <p class="text-xs text-slate-400">Escriba el nombre o apellido (el sistema elimina automáticamente acentos y símbolos).</p>
         </div>
 
-        <!-- 3. SECCIÓN INSTRUCCIONES (Ayuda visual) -->
+        <!-- 3. SECCIÓN INSTRUCCIONES -->
         <div id="seccionInstrucciones" class="bg-white rounded-xl shadow-md p-6 border border-slate-200 space-y-6 hidden">
             <div>
                 <h2 class="text-base font-bold text-gray-800 flex items-center gap-2">
@@ -104,7 +109,7 @@
                     <div class="bg-[#691C32] text-white font-bold w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs">1</div>
                     <div class="space-y-1">
                         <p class="font-bold text-gray-900">Opción A: Escanear Código QR del CURP</p>
-                        <p class="text-xs text-slate-600">Presione <span class="font-semibold text-[#b2571c]">"Escanear QR con Cámara"</span> y apunte hacia el código del documento para capturar automáticamente el CURP.</p>
+                        <p class="text-xs text-slate-600">Presione <span class="font-semibold text-[#b2571c]">"Escanear QR con Cámara"</span> y apunte hacia el código del documento.</p>
                     </div>
                 </div>
 
@@ -112,7 +117,7 @@
                     <div class="bg-[#691C32] text-white font-bold w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs">2</div>
                     <div class="space-y-1">
                         <p class="font-bold text-gray-900">Opción B: Escribir el CURP manualmente</p>
-                        <p class="text-xs text-slate-600">Ingrese directamente los 18 caracteres en la barra de búsqueda y dé clic en <span class="font-semibold text-[#691C32]">"Buscar"</span>.</p>
+                        <p class="text-xs text-slate-600">Ingrese los 18 caracteres en la barra y dé clic en <span class="font-semibold text-[#691C32]">"Buscar"</span>.</p>
                     </div>
                 </div>
 
@@ -120,7 +125,7 @@
                     <div class="bg-[#691C32] text-white font-bold w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs">3</div>
                     <div class="space-y-1">
                         <p class="font-bold text-gray-900">Opción C: Buscar por Nombre y Apellido</p>
-                        <p class="text-xs text-slate-600">Cambie a la pestaña <span class="font-semibold text-slate-800">"Buscar por Nombre"</span>, escriba el nombre y seleccione el registro correcto de la lista resultante.</p>
+                        <p class="text-xs text-slate-600">Escriba el nombre en la pestaña correspondiente y seleccione el registro de la lista.</p>
                     </div>
                 </div>
 
@@ -128,7 +133,7 @@
                     <div class="bg-red-600 text-white font-bold w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs">⚠️</div>
                     <div class="space-y-1">
                         <p class="font-bold text-red-900">¿Qué pasa si aparece "No encontrado"?</p>
-                        <p class="text-xs text-red-700">Indique amablemente al ciudadano: <strong>"No se encuentra registrado en este listado. Favor de pasar a ventanilla."</strong></p>
+                        <p class="text-xs text-red-700">Indique amablemente: <strong>"No se encuentra registrado en este listado. Favor de pasar a ventanilla."</strong></p>
                     </div>
                 </div>
             </div>
@@ -145,6 +150,12 @@
             </div>
             <p id="scannerStatus" class="text-xs text-amber-400 font-mono">Buscando código QR...</p>
             <canvas id="canvasCanvas" class="hidden"></canvas>
+        </div>
+
+        <!-- Consola de Depuración -->
+        <div class="bg-slate-900 text-emerald-400 font-mono text-xs rounded-xl p-4 shadow-inner overflow-x-auto">
+            <p class="text-slate-400 mb-1">🔍 Consola de Depuración:</p>
+            <div id="consoleOutput">Esperando consulta...</div>
         </div>
 
         <!-- RESULTADOS -->
@@ -170,7 +181,7 @@
 
     <!-- SCRIPT DE CONTROL -->
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbwK5Ypo9_kmtSJVyvGjCpOm7CeZr7RO3IHxoCPEzb-61re-8VPr8bgrLMpp8yqBNxVw/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbwfnS_vRrJdGsplAvWDkDSnW39jOrd6y7O-H_6CwtokkpYSlhZFrKEAEzZBNmGtLTXi/exec";
 
         let videoStream = null;
         let scanningInterval = null;
@@ -225,9 +236,16 @@
 
         async function ejecutarBusquedaAPI(queryParam) {
             ocultarResultados();
+            const consoleOut = document.getElementById('consoleOutput');
+            
+            // Indicador de carga dinámico con puntos en movimiento
+            consoleOut.innerHTML = `<span class="saving">Consultando al servidor<span>.</span><span>.</span><span>.</span></span>`;
+
             try {
                 const response = await fetch(`${API_URL}${queryParam}`);
                 const data = await response.json();
+
+                consoleOut.innerText = `Respuesta recibida:\n${JSON.stringify(data, null, 2)}`;
 
                 if (!data.encontrado) {
                     mostrarNoEncontrado();
@@ -241,6 +259,7 @@
                 }
 
             } catch (error) {
+                consoleOut.innerText = `Error de conexión: ${error.message}`;
                 alert("Error de conexión con el servidor.");
             }
         }
@@ -378,6 +397,7 @@
         function limpiarTodo() {
             document.getElementById('curpInput').value = '';
             document.getElementById('nombreInput').value = '';
+            document.getElementById('consoleOutput').innerText = 'Consola limpia. Esperando consulta...';
             ocultarResultados();
             detenerEscanner();
         }
