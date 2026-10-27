@@ -20,7 +20,7 @@
 
     <!-- HEADER INSTITUCIONAL -->
     <header class="bg-gob-primary text-white shadow-md">
-        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-4">
                 <div class="bg-white text-gob-primary font-bold px-3 py-2 text-xs rounded shadow">
                     GOBIERNO DE MÉXICO
@@ -40,7 +40,7 @@
     </header>
 
     <!-- CONTENIDO PRINCIPAL -->
-    <main class="max-w-4xl w-full mx-auto p-4 flex-grow space-y-6 flex flex-col justify-center">
+    <main class="max-w-5xl w-full mx-auto p-4 flex-grow space-y-6 flex flex-col justify-center">
 
         <!-- 1. CONTENEDOR DE LOGIN -->
         <div id="login-container" class="bg-white rounded-xl shadow-md p-6 sm:p-8 border-t-4 border-gob-primary max-w-md mx-auto w-full">
@@ -101,7 +101,7 @@
                 <p class="text-xs text-gray-500">Seleccione el módulo institucional al que desea ingresar:</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <!-- Tarjeta Filtro Nominal -->
                 <a href="FiltroSare.html" class="bg-white rounded-xl shadow-md p-6 border-t-4 border-emerald-600 hover:shadow-lg transition group flex flex-col justify-between">
                     <div>
@@ -109,7 +109,7 @@
                             F
                         </div>
                         <h3 class="text-lg font-bold text-gray-800 group-hover:text-emerald-700 transition">Filtro Nominal</h3>
-                        <p class="text-xs text-gray-500 mt-1">Búsqueda rápida por CURP, cámara QR o coincidencias de nombre para ventanilla.</p>
+                        <p class="text-xs text-gray-500 mt-1">Filtrar tarjetas que se encuentran en la SARE.</p>
                     </div>
                     <span class="text-emerald-700 text-xs font-semibold mt-6 inline-flex items-center">
                         Acceder al módulo &rarr;
@@ -123,7 +123,7 @@
                             V
                         </div>
                         <h3 class="text-lg font-bold text-gray-800 group-hover:text-[#691C32] transition">Módulo de Vigencia</h3>
-                        <p class="text-xs text-gray-500 mt-1">Consultar estatus de vigencias, registros y validaciones operativas directas.</p>
+                        <p class="text-xs text-gray-500 mt-1">Revisar el estado de vigencia para ver si se puede entregar o no.</p>
                     </div>
                     <span class="text-gob-primary text-xs font-semibold mt-6 inline-flex items-center">
                         Acceder al módulo &rarr;
@@ -137,9 +137,23 @@
                             R
                         </div>
                         <h3 class="text-lg font-bold text-gray-800 group-hover:text-amber-700 transition">Módulo de Rechazos</h3>
-                        <p class="text-xs text-gray-500 mt-1">Administración, revisión de registros rechazados y códigos QR condicionales.</p>
+                        <p class="text-xs text-gray-500 mt-1">Revisar becarios con situación de remplazo de tarjeta.</p>
                     </div>
                     <span class="text-amber-700 text-xs font-semibold mt-6 inline-flex items-center">
+                        Acceder al módulo &rarr;
+                    </span>
+                </a>
+
+                <!-- Tarjeta Salidas (Nuevo Módulo) -->
+                <a href="SALIDA.html" class="bg-white rounded-xl shadow-md p-6 border-t-4 border-blue-600 hover:shadow-lg transition group flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 bg-blue-50 text-blue-700 rounded-lg flex items-center justify-center font-bold text-xl mb-4 group-hover:bg-blue-600 group-hover:text-white transition">
+                            📦
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-800 group-hover:text-blue-700 transition">Salida de Tarjetas</h3>
+                        <p class="text-xs text-gray-500 mt-1">Escaneo rápido de códigos de barras para control y registro de inventario saliente.</p>
+                    </div>
+                    <span class="text-blue-700 text-xs font-semibold mt-6 inline-flex items-center">
                         Acceder al módulo &rarr;
                     </span>
                 </a>
@@ -155,7 +169,6 @@
 
     <!-- SCRIPT DE CONEXIÓN CON GOOGLE APPS SCRIPT -->
     <script>
-        // URL de tu Apps Script que maneja el LOGIN de usuarios (NO la del filtro)
         const API_URL = "https://script.google.com/macros/s/AKfycbzvVdEGOq12YnsW3sNmo8O4cUwf8m5ubAj1VO3lKh87l3hBIN9horMOZrWJuJxp_Clg/exec";
 
         let tempUserForPassword = "";
@@ -241,7 +254,6 @@
                 }
             } catch (err) {
                 passError.textContent = "Error de conexión con el servidor.";
-                passError.classList.add("hidden");
                 passError.classList.remove("hidden");
             }
         }
