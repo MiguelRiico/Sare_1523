@@ -32,7 +32,7 @@
                 </div>
                 <div>
                     <h1 class="text-lg font-semibold leading-tight">Control de Inventario de Tarjetas</h1>
-                    <p class="text-xs text-red-200">Salidas, Canastita y Validación Manual</p>
+                    <p id="infoOperadorHeader" class="text-xs text-red-200">Operador: Cargando...</p>
                 </div>
             </div>
             <a href="index.html" class="bg-amber-500 hover:bg-amber-600 text-white font-medium text-xs px-4 py-2 rounded shadow transition">
@@ -44,21 +44,60 @@
     <!-- CONTENIDO PRINCIPAL -->
     <main class="max-w-4xl w-full mx-auto p-4 flex-grow space-y-6">
 
+        <!-- DASHBOARD DE CONTADORES EN TIEMPO REAL -->
+        <div class="grid grid-cols-2 gap-4">
+            <div class="bg-white rounded-xl shadow p-4 border-l-4 border-emerald-600 flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-bold text-slate-400 uppercase">Salidas Exitosas</p>
+                    <h3 id="contadorSalidasNetas" class="text-2xl font-black text-emerald-700">0</h3>
+                </div>
+                <span class="text-2xl">📦</span>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4 border-l-4 border-amber-500 flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-bold text-slate-400 uppercase">Canastita (Devueltas)</p>
+                    <h3 id="contadorDevueltas" class="text-2xl font-black text-amber-700">0</h3>
+                </div>
+                <span class="text-2xl">📥</span>
+            </div>
+        </div>
+
         <!-- Selector de Pestañas -->
         <div class="bg-white rounded-xl shadow-md p-2 border-t-4 border-gob-primary grid grid-cols-2 gap-2">
             <button onclick="cambiarSeccion('salidas')" id="tabSalidas" class="py-2.5 rounded-lg text-sm font-bold bg-[#691C32] text-white shadow transition text-center">
                 📦 1. Salidas de Tarjetas
             </button>
-            <button onclick="cambiarSeccion('canastita')" id="tabCanastita" class="py-2.5 rounded-lg text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center">
-                📥 2. Canastita (Borrar de Salidas)
+            <button onclick="intentarAbrirCanastita()" id="tabCanastita" class="py-2.5 rounded-lg text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center">
+                📥 2. Canastita (Fin de Día)
             </button>
+        </div>
+
+        <!-- MODAL DE ADVERTENCIA OBLIGATORIA PARA CANASTITA -->
+        <div id="modalAdvertencia" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border-t-8 border-amber-600 space-y-4 text-center">
+                <div class="w-12 h-12 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center font-bold text-2xl mx-auto">
+                    ⚠️
+                </div>
+                <h3 class="text-lg font-bold text-gray-900">Aviso Importante: Corte Fin de Día</h3>
+                <p class="text-xs text-slate-600 text-left leading-relaxed bg-amber-50 p-3 rounded-lg border border-amber-200">
+                    Esta función de <strong>Canastita</strong> sirve exclusivamente para <strong>descontar y eliminar</strong> tarjetas que se pistolearon previamente pero que <strong>no se pudieron entregar</strong> al beneficiario.<br><br>
+                    📌 <em>Se sugiere encarecidamente utilizar esta función únicamente al finalizar la jornada de entrega para mantener limpio tu inventario.</em>
+                </p>
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button onclick="cerrarModalAdvertencia()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2.5 rounded-xl text-xs transition">
+                        Cancelar
+                    </button>
+                    <button onclick="confirmarAbrirCanastita()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-xl text-xs shadow transition">
+                        Entendido, Abrir Canastita
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- SECCIÓN 1: SALIDAS -->
         <div id="seccionSalidas" class="bg-white rounded-xl shadow-md p-6 border border-slate-200 space-y-4">
             <div class="flex justify-between items-center flex-wrap gap-2">
                 <h2 class="text-sm font-bold text-gray-700 uppercase">Módulo de Salidas</h2>
-                <!-- INTERRUPTOR MODO AUTOMÁTICO / MANUAL -->
                 <div class="flex items-center space-x-2 bg-slate-100 p-1.5 rounded-lg border border-slate-200">
                     <span class="text-xs font-bold text-slate-600 ml-1">Modo:</span>
                     <button onclick="setModoIngreso('auto')" id="btnModoAuto" class="text-xs px-3 py-1 rounded font-bold bg-[#691C32] text-white transition">⚡ Pistola (Auto)</button>
@@ -66,7 +105,6 @@
                 </div>
             </div>
 
-            <!-- Instrucción dinámica -->
             <div id="instruccionSalida" class="bg-emerald-50 border border-emerald-200 p-3 rounded-lg text-xs text-emerald-900">
                 <p class="font-bold mb-1">📌 Instrucción (Modo Automático / Ráfaga):</p>
                 <p>Pase la pistola por el código de barras. El registro se enviará y limpiará de inmediato.</p>
@@ -77,7 +115,6 @@
                     oninput="procesarEntrada(this, 'salida')" autofocus
                     class="w-full text-center uppercase tracking-widest font-mono text-lg border-2 border-slate-300 rounded-xl px-4 py-4 text-gray-800 focus:outline-none focus:border-[#691C32] shadow-inner bg-slate-50">
                 
-                <!-- Botón de envío manual (Solo visible en modo manual) -->
                 <button id="btnEnviarManual" onclick="enviarManualSalida()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 rounded-lg text-sm shadow transition hidden">
                     💾 Validar y Enviar Salida Manual
                 </button>
@@ -89,8 +126,8 @@
             <div class="text-center space-y-2">
                 <h2 class="text-sm font-bold text-amber-800 uppercase">Corte Fin de Día - Canastita (Devoluciones)</h2>
                 <div class="bg-amber-50 border border-amber-200 p-3 rounded-lg text-xs text-amber-900 text-left max-w-lg mx-auto">
-                    <p class="font-bold mb-1">📌 Instrucciones de Corte:</p>
-                    <p>Escanee la tarjeta que no se entregó para <strong>eliminarla y descontarla</strong> automáticamente de la hoja de salidas.</p>
+                    <p class="font-bold mb-1">📌 Modo Canastita Activo:</p>
+                    <p>Escanee la tarjeta no entregada para <strong>eliminarla y descontarla</strong> de la hoja de salidas.</p>
                 </div>
             </div>
             <div class="max-w-md mx-auto pt-2">
@@ -100,7 +137,7 @@
             </div>
         </div>
 
-        <!-- NOTIFICACIÓN DE ÉXITO -->
+        <!-- NOTIFICACIONES -->
         <div id="alertaExito" class="bg-emerald-50 border-l-8 border-emerald-600 rounded-xl p-4 shadow-md hidden flex items-center justify-between">
             <div>
                 <span id="badgeExito" class="bg-emerald-200 text-emerald-900 text-[10px] font-bold px-2 py-0.5 rounded">REGISTRADO</span>
@@ -110,19 +147,17 @@
             <span id="lblHora" class="text-xs font-mono text-emerald-800 font-bold bg-white px-2 py-1 rounded shadow-sm"></span>
         </div>
 
-        <!-- ALERTA DE DUPLICADO / ADVERTENCIA -->
         <div id="alertaDuplicado" class="bg-amber-50 border-l-8 border-amber-500 rounded-xl p-4 shadow-md hidden text-center space-y-1">
             <p class="font-bold text-sm text-amber-800">⚠️ Alerta de Sistema</p>
             <p id="lblDuplicadoMsg" class="text-xs font-semibold text-amber-700"></p>
         </div>
 
-        <!-- ALERTA DE ERROR -->
         <div id="alertaError" class="bg-red-50 border-l-8 border-red-600 rounded-xl p-4 shadow-md hidden text-center space-y-1">
             <p class="font-bold text-sm text-red-800">❌ Error</p>
             <p id="lblErrorMsg" class="text-xs font-semibold text-red-700"></p>
         </div>
 
-        <!-- HISTORIAL RÁPIDO -->
+        <!-- HISTORIAL -->
         <div class="bg-white rounded-xl shadow-md p-6 border border-slate-200 space-y-3">
             <div class="flex justify-between items-center">
                 <h3 id="tituloHistorial" class="text-sm font-bold text-gray-800">Historial de Salidas en esta Sesión</h3>
@@ -155,11 +190,33 @@
 
     <!-- SCRIPT DE CONTROL -->
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbx5p5-11o6IoCX-Dec3M-HHGXkF4ECctZEsgmRqX3sNuJ1oYjJVGOB28uXpKGnGRwL5pA/exec";
-        let totalSesion = 0;
+        const API_URL = "https://script.google.com/macros/s/AKfycby0Trx65LV-WTQbJf11bnZ0d8QD2BBZFbj5U8ai9MUI44UdbhRPb8Tg5iRbl7-p3ZBrAQ/exec";
+        
+        let usuarioActual = sessionStorage.getItem("sare_name") || "Desconocido";
+        let usuarioFolio = sessionStorage.getItem("sare_user") || "S/D";
+        let totalSalidasNetas = 0;
+        let totalDevueltas = 0;
         let procesando = false;
         let seccionActual = 'salidas';
-        let modoIngreso = 'auto'; // 'auto' (ráfaga) o 'manual' (con botón de envío)
+        let modoIngreso = 'auto';
+
+        window.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("infoOperadorHeader").textContent = `Operador: ${usuarioActual} (Folio: ${usuarioFolio})`;
+        });
+
+        function intentarAbrirCanastita() {
+            // Muestra la advertencia obligatoria antes de cambiar de pestaña
+            document.getElementById("modalAdvertencia").classList.remove("hidden");
+        }
+
+        function cerrarModalAdvertencia() {
+            document.getElementById("modalAdvertencia").classList.add("hidden");
+        }
+
+        function confirmarAbrirCanastita() {
+            cerrarModalAdvertencia();
+            cambiarSeccion('canastita');
+        }
 
         function cambiarSeccion(seccion) {
             seccionActual = seccion;
@@ -180,11 +237,8 @@
                 sCanastita.classList.remove('hidden');
                 tCanastita.className = "py-2.5 rounded-lg text-sm font-bold bg-amber-600 text-white shadow transition text-center";
                 tSalidas.className = "py-2.5 rounded-lg text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center";
-                titHistorial.textContent = "Historial de Canastita (Tarjetas Descontadas de Salidas)";
+                titHistorial.textContent = "Historial de Canastita (Tarjetas Descontadas)";
             }
-            totalSesion = 0;
-            document.getElementById('contadorSesion').textContent = "0 procesadas";
-            document.getElementById('tablaHistorial').innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 italic">No hay registros en esta sesión todavía.</td></tr>`;
             mantenerFoco();
         }
 
@@ -212,19 +266,18 @@
         }
 
         function mantenerFoco() {
-            if (modoIngreso === 'manual') return; // En manual no forzamos para dejar escribir libremente
+            if (modoIngreso === 'manual' && seccionActual === 'salidas') return;
             const input = seccionActual === 'salidas' ? document.getElementById("codigoSalidaInput") : document.getElementById("codigoCanastitaInput");
             if (document.activeElement !== input) {
                 input.focus();
             }
         }
-        setInterval(() => { if (modoIngreso === 'auto') mantenerFoco(); }, 1000);
+        setInterval(() => { if (modoIngreso === 'auto' || seccionActual === 'canastita') mantenerFoco(); }, 1000);
 
         function procesarEntrada(input, tipo) {
             if (procesando) return;
             let codigo = input.value.trim();
             
-            // Si está en modo automático y alcanza 16 caracteres, se dispara solo
             if (tipo === 'salida' && modoIngreso === 'auto' && codigo.length >= 16) {
                 procesando = true;
                 enviarServidor(codigo, tipo);
@@ -238,7 +291,7 @@
             const input = document.getElementById("codigoSalidaInput");
             let codigo = input.value.trim();
             if (codigo.length < 10) {
-                mostrarError("Ingrese un código de tarjeta válido de al menos 10-16 dígitos.");
+                mostrarError("Ingrese un código de tarjeta válido.");
                 return;
             }
             procesando = true;
@@ -256,12 +309,17 @@
             try {
                 const response = await fetch(API_URL, {
                     method: "POST",
-                    body: JSON.stringify({ action: actionName, codigo: codigo })
+                    body: JSON.stringify({ 
+                        action: actionName, 
+                        codigo: codigo, 
+                        usuario: `${usuarioActual} (${usuarioFolio})` 
+                    })
                 });
                 const result = await response.json();
 
                 if (result.status === "success") {
                     mostrarExito(result, codigo, tipo);
+                    actualizarContadores(tipo);
                     agregarAlHistorial(result, codigo, tipo);
                 } else if (result.status === "duplicado") {
                     mostrarDuplicado(result.mensaje);
@@ -278,6 +336,17 @@
                 }
                 procesando = false;
             }
+        }
+
+        function actualizarContadores(tipo) {
+            if (tipo === 'salida') {
+                totalSalidasNetas++;
+            } else {
+                totalDevueltas++;
+                if (totalSalidasNetas > 0) totalSalidasNetas--; // Resta neta en vivo
+            }
+            document.getElementById('contadorSalidasNetas').textContent = totalSalidasNetas;
+            document.getElementById('contadorDevueltas').textContent = totalDevueltas;
         }
 
         function mostrarExito(res, folio, tipo) {
@@ -320,11 +389,8 @@
         }
 
         function agregarAlHistorial(res, folio, tipo) {
-            totalSesion++;
-            document.getElementById('contadorSesion').textContent = `${totalSesion} procesadas`;
-
             const tbody = document.getElementById('tablaHistorial');
-            if (totalSesion === 1) tbody.innerHTML = "";
+            if (tbody.innerHTML.includes("No hay registros")) tbody.innerHTML = "";
 
             const tr = document.createElement('tr');
             tr.className = "hover:bg-slate-50";
