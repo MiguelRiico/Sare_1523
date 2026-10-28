@@ -44,8 +44,8 @@
     <!-- CONTENIDO PRINCIPAL -->
     <main class="max-w-4xl w-full mx-auto p-4 flex-grow space-y-6">
 
-        <!-- DASHBOARD DE CONTADORES EN TIEMPO REAL -->
-        <div class="grid grid-cols-2 gap-4">
+        <!-- DASHBOARD DE CONTADORES Y BOTÓN DE SINCRONIZAR -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="bg-white rounded-xl shadow p-4 border-l-4 border-emerald-600 flex items-center justify-between">
                 <div>
                     <p class="text-xs font-bold text-slate-400 uppercase">Salidas Exitosas</p>
@@ -55,10 +55,17 @@
             </div>
             <div class="bg-white rounded-xl shadow p-4 border-l-4 border-amber-500 flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-bold text-slate-400 uppercase">Canastita (Devueltas)</p>
+                    <p class="text-xs font-bold text-slate-400 uppercase">Canasta (Devueltas)</p>
                     <h3 id="contadorDevueltas" class="text-2xl font-black text-amber-700">0</h3>
                 </div>
                 <span class="text-2xl">📥</span>
+            </div>
+            <!-- BOTÓN DE SINCRONIZAR / REFRESCAR -->
+            <div class="bg-white rounded-xl shadow p-3 border border-slate-200 flex flex-col justify-center items-center">
+                <button onclick="sincronizarHistorialDia()" class="w-full bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold py-2.5 px-3 rounded-lg shadow transition flex items-center justify-center space-x-2">
+                    <span>🔄 Sincronizar Historial</span>
+                </button>
+                <span class="text-[10px] text-slate-400 mt-1">Recupera registros si se recarga la página</span>
             </div>
         </div>
 
@@ -68,7 +75,7 @@
                 📦 1. Salidas de Tarjetas
             </button>
             <button onclick="intentarAbrirCanastita()" id="tabCanastita" class="py-2.5 rounded-lg text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center">
-                📥 2. Canastita (Fin de Día)
+                📥 2. Canasta (Fin de Día)
             </button>
         </div>
 
@@ -80,15 +87,44 @@
                 </div>
                 <h3 class="text-lg font-bold text-gray-900">Aviso Importante: Corte Fin de Día</h3>
                 <p class="text-xs text-slate-600 text-left leading-relaxed bg-amber-50 p-3 rounded-lg border border-amber-200">
-                    Esta función de <strong>Canastita</strong> sirve exclusivamente para <strong>descontar y eliminar</strong> tarjetas que se pistolearon previamente pero que <strong>no se pudieron entregar</strong> al beneficiario.<br><br>
-                    📌 <em>Se sugiere encarecidamente utilizar esta función únicamente al finalizar la jornada de entrega para mantener limpio tu inventario.</em>
+                    Esta función de <strong>Canasta</strong> sirve exclusivamente para <strong>descontar y registrar</strong> tarjetas que se pistolearon previamente pero que <strong>no se pudieron entregar</strong>.<br><br>
+                    📌 <em>Cada tarjeta mostrará sus datos para confirmar el envío a la bitácora de auditoría.</em>
                 </p>
                 <div class="grid grid-cols-2 gap-3 pt-2">
                     <button onclick="cerrarModalAdvertencia()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2.5 rounded-xl text-xs transition">
                         Cancelar
                     </button>
                     <button onclick="confirmarAbrirCanastita()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-xl text-xs shadow transition">
-                        Entendido, Abrir Canastita
+                        Entendido, Abrir Canasta
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL DE CONFIRMACIÓN DE BORRADO / CANASTA -->
+        <div id="modalConfirmarBorrado" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border-t-8 border-red-600 space-y-4">
+                <div class="flex items-center space-x-3 border-b pb-3">
+                    <span class="text-3xl">🗑️</span>
+                    <div>
+                        <h3 class="text-base font-bold text-red-800">Confirmación de Envío a Canasta</h3>
+                        <p class="text-xs text-slate-500">Se registrará en auditoría y se descontará de salidas:</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 text-xs">
+                    <p><strong>BENEFICIARIO:</strong> <span id="delNombre" class="text-sm font-bold text-gray-900"></span></p>
+                    <p><strong>FOLIO:</strong> <span id="delFolio" class="font-mono font-bold text-red-700"></span></p>
+                    <p><strong>CCT:</strong> <span id="delCct" class="font-mono"></span> | <strong>MUNICIPIO:</strong> <span id="delMunicipio"></span></p>
+                    <p><strong>OPERADOR ORIGINAL:</strong> <span id="delOperadorOrig" class="font-semibold text-slate-700"></span></p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button onclick="cancelarBorradoCanastita()" class="bg-slate-300 hover:bg-slate-400 text-slate-800 font-bold py-3 rounded-xl text-xs transition">
+                        ❌ NO, Cancelar
+                    </button>
+                    <button onclick="ejecutarBorradoCanastita()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl text-xs shadow transition">
+                        ✔️ SÍ, Enviar a Canasta
                     </button>
                 </div>
             </div>
@@ -121,13 +157,13 @@
             </div>
         </div>
 
-        <!-- SECCIÓN 2: CANASTITA (DEVOLUCIONES) -->
+        <!-- SECCIÓN 2: CANASTA -->
         <div id="seccionCanastita" class="bg-white rounded-xl shadow-md p-6 border border-amber-400 space-y-4 hidden">
             <div class="text-center space-y-2">
-                <h2 class="text-sm font-bold text-amber-800 uppercase">Corte Fin de Día - Canastita (Devoluciones)</h2>
+                <h2 class="text-sm font-bold text-amber-800 uppercase">Corte Fin de Día - Canasta (Devoluciones)</h2>
                 <div class="bg-amber-50 border border-amber-200 p-3 rounded-lg text-xs text-amber-900 text-left max-w-lg mx-auto">
-                    <p class="font-bold mb-1">📌 Modo Canastita Activo:</p>
-                    <p>Escanee la tarjeta no entregada para <strong>eliminarla y descontarla</strong> de la hoja de salidas.</p>
+                    <p class="font-bold mb-1">📌 Modo Canasta Activo:</p>
+                    <p>Escanee la tarjeta no entregada. Se validarán sus datos antes de moverla a la bitácora de auditoría.</p>
                 </div>
             </div>
             <div class="max-w-md mx-auto pt-2">
@@ -175,7 +211,7 @@
                     </thead>
                     <tbody id="tablaHistorial" class="divide-y divide-slate-100 text-slate-700">
                         <tr>
-                            <td colspan="4" class="p-4 text-center text-slate-400 italic">No hay registros en esta sesión todavía.</td>
+                            <td colspan="4" class="p-4 text-center text-slate-400 italic">No hay registros en esta sesión todavía. Haga clic en Sincronizar Historial si recargó la página.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -190,7 +226,7 @@
 
     <!-- SCRIPT DE CONTROL -->
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycby0Trx65LV-WTQbJf11bnZ0d8QD2BBZFbj5U8ai9MUI44UdbhRPb8Tg5iRbl7-p3ZBrAQ/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbz4km43JKqWs_Ajp-zCtJHRlDcQLNM13YDF6BXAfLrzNrTYibbwW1XCyvepctw0Z2Hdag/exec";
         
         let usuarioActual = sessionStorage.getItem("sare_name") || "Desconocido";
         let usuarioFolio = sessionStorage.getItem("sare_user") || "S/D";
@@ -199,13 +235,52 @@
         let procesando = false;
         let seccionActual = 'salidas';
         let modoIngreso = 'auto';
+        let folioPendienteBorrar = "";
 
         window.addEventListener("DOMContentLoaded", () => {
             document.getElementById("infoOperadorHeader").textContent = `Operador: ${usuarioActual} (Folio: ${usuarioFolio})`;
+            sincronizarHistorialDia(); // Sincroniza al abrir la página
         });
 
+        // FUNCIÓN DE SINCRONIZAR HISTORIAL DEL DÍA
+        async function sincronizarHistorialDia() {
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    body: JSON.stringify({ action: "sincronizarDia" })
+                });
+                const result = await response.json();
+
+                if (result.status === "success") {
+                    const tbody = document.getElementById('tablaHistorial');
+                    tbody.innerHTML = "";
+                    totalSalidasNetas = 0;
+                    
+                    if (result.registros.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 italic">No hay registros de salidas para hoy todavía.</td></tr>`;
+                    } else {
+                        result.registros.forEach(reg => {
+                            totalSalidasNetas++;
+                            const tr = document.createElement('tr');
+                            tr.className = "hover:bg-slate-50";
+                            tr.innerHTML = `
+                                <td class="p-2 font-mono text-slate-500">${reg.hora}</td>
+                                <td class="p-2 font-mono font-bold">${reg.folio}</td>
+                                <td class="p-2 font-semibold text-gray-900">${reg.nombre} <span class="text-emerald-700 font-bold">SALIDA</span></td>
+                                <td class="p-2 font-mono text-[#691C32] font-bold">${reg.cct}</td>
+                            `;
+                            tbody.prepend(tr);
+                        });
+                    }
+                    document.getElementById('contadorSalidasNetas').textContent = totalSalidasNetas;
+                    document.getElementById('contadorSesion').textContent = `${totalSalidasNetas} sincronizadas`;
+                }
+            } catch (err) {
+                console.log("Error al sincronizar historial", err);
+            }
+        }
+
         function intentarAbrirCanastita() {
-            // Muestra la advertencia obligatoria antes de cambiar de pestaña
             document.getElementById("modalAdvertencia").classList.remove("hidden");
         }
 
@@ -237,7 +312,7 @@
                 sCanastita.classList.remove('hidden');
                 tCanastita.className = "py-2.5 rounded-lg text-sm font-bold bg-amber-600 text-white shadow transition text-center";
                 tSalidas.className = "py-2.5 rounded-lg text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center";
-                titHistorial.textContent = "Historial de Canastita (Tarjetas Descontadas)";
+                titHistorial.textContent = "Historial de Canasta (Tarjetas Enviadas a Auditoría)";
             }
             mantenerFoco();
         }
@@ -267,6 +342,8 @@
 
         function mantenerFoco() {
             if (modoIngreso === 'manual' && seccionActual === 'salidas') return;
+            if (!document.getElementById("modalConfirmarBorrado").classList.contains("hidden")) return;
+            
             const input = seccionActual === 'salidas' ? document.getElementById("codigoSalidaInput") : document.getElementById("codigoCanastitaInput");
             if (document.activeElement !== input) {
                 input.focus();
@@ -283,7 +360,7 @@
                 enviarServidor(codigo, tipo);
             } else if (tipo === 'canastita' && codigo.length >= 16) {
                 procesando = true;
-                enviarServidor(codigo, tipo);
+                consultarParaCanastita(codigo);
             }
         }
 
@@ -298,19 +375,106 @@
             enviarServidor(codigo, 'salida');
         }
 
-        async function enviarServidor(codigo, tipo) {
+        async function consultarParaCanastita(codigo) {
             ocultarAlertas();
-            const inputId = tipo === 'salida' ? "codigoSalidaInput" : "codigoCanastitaInput";
-            const input = document.getElementById(inputId);
-            if(input) input.value = "Procesando...";
+            const input = document.getElementById("codigoCanastitaInput");
+            input.value = "Buscando...";
+            procesando = true;
 
-            const actionName = tipo === 'salida' ? "registrarSalida" : "registrarDevolucion";
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    body: JSON.stringify({ action: "registrarDevolucion", codigo: codigo })
+                });
+                const result = await response.json();
+
+                if (result.status === "encontrado_para_borrar") {
+                    folioPendienteBorrar = codigo;
+                    document.getElementById("delNombre").textContent = result.nombre;
+                    document.getElementById("delFolio").textContent = result.folio;
+                    document.getElementById("delCct").textContent = result.cct;
+                    document.getElementById("delMunicipio").textContent = result.municipio;
+                    document.getElementById("delOperadorOrig").textContent = result.operador;
+                    
+                    document.getElementById("modalConfirmarBorrado").classList.remove("hidden");
+                } else {
+                    mostrarError(result.mensaje || "El folio no está registrado en salidas.");
+                    input.value = "";
+                    input.focus();
+                    procesando = false;
+                }
+            } catch (err) {
+                mostrarError("Error de conexión con el servidor.");
+                input.value = "";
+                input.focus();
+                procesando = false;
+            }
+        }
+
+        function cancelarBorradoCanastita() {
+            document.getElementById("modalConfirmarBorrado").classList.add("hidden");
+            folioPendienteBorrar = "";
+            const input = document.getElementById("codigoCanastitaInput");
+            input.value = "";
+            input.focus();
+            procesando = false;
+        }
+
+        async function ejecutarBorradoCanastita() {
+            document.getElementById("modalConfirmarBorrado").classList.add("hidden");
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    body: JSON.stringify({ 
+                        action: confirmarBorradoSalida, 
+                        codigo: folioPendienteBorrar,
+                        usuario: `${usuarioActual} (${usuarioFolio})`
+                    })
+                });
+                // Nota: Asegurar nombre exacto de la acción en el fetch
+                // Se ajusta en la siguiente línea:
+            } catch (err) {}
 
             try {
                 const response = await fetch(API_URL, {
                     method: "POST",
                     body: JSON.stringify({ 
-                        action: actionName, 
+                        action: "confirmarBorradoSalida", 
+                        codigo: folioPendienteBorrar,
+                        usuario: `${usuarioActual} (${usuarioFolio})`
+                    })
+                });
+                const result = await response.json();
+
+                if (result.status === "success") {
+                    mostrarExito(result, folioPendienteBorrar, 'canastita');
+                    actualizarContadores('canastita');
+                    agregarAlHistorial(result, folioPendienteBorrar, 'canastita');
+                } else {
+                    mostrarError(result.mensaje);
+                }
+            } catch (err) {
+                mostrarError("Error al confirmar el borrado en el servidor.");
+            } finally {
+                folioPendienteBorrar = "";
+                const input = document.getElementById("codigoCanastitaInput");
+                input.value = "";
+                input.focus();
+                procesando = false;
+            }
+        }
+
+        async function enviarServidor(codigo, tipo) {
+            ocultarAlertas();
+            const input = document.getElementById("codigoSalidaInput");
+            input.value = "Procesando...";
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    body: JSON.stringify({ 
+                        action: "registrarSalida", 
                         codigo: codigo, 
                         usuario: `${usuarioActual} (${usuarioFolio})` 
                     })
@@ -330,10 +494,8 @@
             } catch (err) {
                 mostrarError("Error de conexión con el servidor.");
             } finally {
-                if(input) {
-                    input.value = "";
-                    if(modoIngreso === 'auto' || tipo === 'canastita') input.focus();
-                }
+                input.value = "";
+                if(modoIngreso === 'auto') input.focus();
                 procesando = false;
             }
         }
@@ -343,7 +505,7 @@
                 totalSalidasNetas++;
             } else {
                 totalDevueltas++;
-                if (totalSalidasNetas > 0) totalSalidasNetas--; // Resta neta en vivo
+                if (totalSalidasNetas > 0) totalSalidasNetas--;
             }
             document.getElementById('contadorSalidasNetas').textContent = totalSalidasNetas;
             document.getElementById('contadorDevueltas').textContent = totalDevueltas;
@@ -358,7 +520,7 @@
                 badge.textContent = "SALIDA REGISTRADA";
                 badge.className = "bg-emerald-200 text-emerald-900 text-[10px] font-bold px-2 py-0.5 rounded";
             } else {
-                badge.textContent = "DEVUELTO / BORRADO DE SALIDAS";
+                badge.textContent = "ENVIADO A CANASTA (AUDITORÍA)";
                 badge.className = "bg-amber-200 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded";
             }
 
@@ -395,7 +557,7 @@
             const tr = document.createElement('tr');
             tr.className = "hover:bg-slate-50";
             
-            const badgeAccion = tipo === 'salida' ? '<span class="text-emerald-700 font-bold">SALIDA</span>' : '<span class="text-amber-700 font-bold">DEVUELTO (BORRADO)</span>';
+            const badgeAccion = tipo === 'salida' ? '<span class="text-emerald-700 font-bold">SALIDA</span>' : '<span class="text-amber-700 font-bold">CANASTA (BORRADO)</span>';
 
             tr.innerHTML = `
                 <td class="p-2 font-mono text-slate-500">${res.hora}</td>
