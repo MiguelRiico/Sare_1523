@@ -13,10 +13,6 @@
         .border-gob-primary { border-color: #691C32; }
         .btn-gob { background-color: #5b1328; transition: background-color 0.2s; }
         .btn-gob:hover { background-color: #440e1e; }
-        @keyframes blink { 0% { opacity: .2; } 20% { opacity: 1; } 100% { opacity: .2; } }
-        .saving span { animation-name: blink; animation-duration: 1.4s; animation-iteration-count: infinite; animation-fill-mode: both; }
-        .saving span:nth-child(2) { animation-delay: .2s; }
-        .saving span:nth-child(3) { animation-delay: .4s; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between" onclick="mantenerFoco()">
@@ -177,20 +173,6 @@
             </div>
         </div>
 
-        <!-- CONTROL DE DEPURACIÓN (Casilla) -->
-        <div class="flex items-center justify-between px-1">
-            <label class="flex items-center space-x-2 text-xs font-semibold text-slate-600 cursor-pointer select-none">
-                <input type="checkbox" id="toggleDebug" onchange="toggleConsola()" class="rounded border-slate-300 text-[#691C32] focus:ring-[#691C32] w-4 h-4" checked>
-                <span>Mostrar Consola de Depuración</span>
-            </label>
-        </div>
-
-        <!-- Consola de Depuración -->
-        <div id="debugBox" class="bg-slate-900 text-emerald-400 font-mono text-xs rounded-xl p-4 shadow-inner overflow-x-auto max-h-65">
-            <p class="text-slate-400 mb-1">🔍 Consola de Depuración (Operativo):</p>
-            <div id="consoleOutput">Esperando escaneo o consulta...</div>
-        </div>
-
         <!-- NOTIFICACIONES -->
         <div id="alertaExito" class="bg-emerald-50 border-l-8 border-emerald-600 rounded-xl p-4 shadow-md hidden flex items-center justify-between">
             <div>
@@ -260,26 +242,13 @@
             sincronizarHistorialDia();
         });
 
-        function toggleConsola() {
-            const debugBox = document.getElementById('debugBox');
-            const checkbox = document.getElementById('toggleDebug');
-            if (checkbox.checked) {
-                debugBox.classList.remove('hidden');
-            } else {
-                debugBox.classList.add('hidden');
-            }
-        }
-
         async function sincronizarHistorialDia() {
-            const consoleOut = document.getElementById('consoleOutput');
-            consoleOut.innerHTML = `<span class="saving">Sincronizando historial<span>.</span><span>.</span><span>.</span></span>`;
             try {
                 const response = await fetch(API_URL, {
                     method: "POST",
                     body: JSON.stringify({ action: "sincronizarDia" })
                 });
                 const result = await response.json();
-                consoleOut.innerText = `Respuesta Sincronizar:\n${JSON.stringify(result, null, 2)}`;
 
                 if (result.status === "success") {
                     const tbody = document.getElementById('tablaHistorial');
@@ -306,7 +275,7 @@
                     document.getElementById('contadorSesion').textContent = `${totalSalidasNetas} sincronizadas`;
                 }
             } catch (err) {
-                consoleOut.innerText = `Error de conexión en Sincronizar: ${err.message}`;
+                console.log("Error al sincronizar historial", err);
             }
         }
 
@@ -411,16 +380,12 @@
             input.value = "Buscando...";
             procesando = true;
 
-            const consoleOut = document.getElementById('consoleOutput');
-            consoleOut.innerHTML = `<span class="saving">Consultando canasta<span>.</span><span>.</span><span>.</span></span>`;
-
             try {
                 const response = await fetch(API_URL, {
                     method: "POST",
                     body: JSON.stringify({ action: "registrarDevolucion", codigo: codigo })
                 });
                 const result = await response.json();
-                consoleOut.innerText = `Respuesta Devolución:\n${JSON.stringify(result, null, 2)}`;
 
                 if (result.status === "encontrado_para_borrar") {
                     folioPendienteBorrar = codigo;
@@ -438,7 +403,6 @@
                     procesando = false;
                 }
             } catch (err) {
-                consoleOut.innerText = `Error de conexión en Canasta: ${err.message}`;
                 mostrarError("Error de conexión con el servidor.");
                 input.value = "";
                 input.focus();
@@ -457,8 +421,6 @@
 
         async function ejecutarBorradoCanastita() {
             document.getElementById("modalConfirmarBorrado").classList.add("hidden");
-            const consoleOut = document.getElementById('consoleOutput');
-            consoleOut.innerHTML = `<span class="saving">Confirmando borrado<span>.</span><span>.</span><span>.</span></span>`;
             
             try {
                 const response = await fetch(API_URL, {
@@ -470,7 +432,6 @@
                     })
                 });
                 const result = await response.json();
-                consoleOut.innerText = `Respuesta Confirmar Borrado:\n${JSON.stringify(result, null, 2)}`;
 
                 if (result.status === "success") {
                     mostrarExito(result, folioPendienteBorrar, 'canastita');
@@ -480,7 +441,6 @@
                     mostrarError(result.mensaje);
                 }
             } catch (err) {
-                consoleOut.innerText = `Error al confirmar borrado: ${err.message}`;
                 mostrarError("Error al confirmar el borrado en el servidor.");
             } finally {
                 folioPendienteBorrar = "";
@@ -496,9 +456,6 @@
             const input = document.getElementById("codigoSalidaInput");
             input.value = "Procesando...";
 
-            const consoleOut = document.getElementById('consoleOutput');
-            consoleOut.innerHTML = `<span class="saving">Registrando salida<span>.</span><span>.</span><span>.</span></span>`;
-
             try {
                 const response = await fetch(API_URL, {
                     method: "POST",
@@ -509,7 +466,6 @@
                     })
                 });
                 const result = await response.json();
-                consoleOut.innerText = `Respuesta Registrar Salida:\n${JSON.stringify(result, null, 2)}`;
 
                 if (result.status === "success") {
                     mostrarExito(result, codigo, tipo);
@@ -522,7 +478,6 @@
                 }
 
             } catch (err) {
-                consoleOut.innerText = `Error de conexión en Salida: ${err.message}`;
                 mostrarError("Error de conexión con el servidor.");
             } finally {
                 input.value = "";
