@@ -221,12 +221,12 @@
     </main>
 
     <footer class="bg-slate-100 border-t border-slate-200 py-4 text-center text-xs text-slate-500">
-        Coordinación Nacional de Becas para el Bienestar • Región 1523 (SARE Tultitlán)
+        Coordinación Nacional de Becas para el Bienestar • Región 1523 (Tultitlán)
     </footer>
 
     <!-- SCRIPT DE CONTROL -->
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbwzYrVNImbgMqq508HCdQwC5nZso_lKExTl6r28tyAr74oyWMLE9pDe9UeZhT2XJq0LEA/exec"; // Reemplaza por tu enlace de despliegue si creaste un script nuevo para operativo
+        const API_URL = "https://script.google.com/macros/s/AKfycbz8X-1w3T_PJGsFeLe-5pCdLm1UqM4h6Zie7h0kC6jvuQND6etriTl-StNrPjfBlPgo7w/exec";
         
         let usuarioActual = sessionStorage.getItem("sare_name") || "Desconocido";
         let usuarioFolio = sessionStorage.getItem("sare_user") || "S/D";
@@ -255,7 +255,7 @@
                     tbody.innerHTML = "";
                     totalSalidasNetas = 0;
                     
-                    if (result.registros.length === 0) {
+                    if (!result.registros || result.registros.length === 0) {
                         tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 italic">No hay registros de salidas para hoy todavía.</td></tr>`;
                     } else {
                         result.registros.forEach(reg => {
@@ -329,7 +329,7 @@
                 btnAuto.className = "text-xs px-3 py-1 rounded font-bold bg-[#691C32] text-white transition";
                 btnManual.className = "text-xs px-3 py-1 rounded font-bold bg-transparent text-slate-600 transition";
                 btnEnviar.classList.add('hidden');
-                instruccion.innerHTML = `<p class="font-bold mb-1">📌 Instrucción (Modo Automático / Ráfaga):</p><p>Pase la pistola por el código de barras. El registro se enviará y limpiará de inmediato.</p>`;
+                instruccion.innerHTML = `<p class="font-bold mb-1">📌 Instrucción (Modo Automático / Ráfaga):</p><p>Pase la pistola por el código del folio. El registro se enviará y limpiará de inmediato.</p>`;
             } else {
                 btnManual.className = "text-xs px-3 py-1 rounded font-bold bg-amber-600 text-white transition";
                 btnAuto.className = "text-xs px-3 py-1 rounded font-bold bg-transparent text-slate-600 transition";
