@@ -104,8 +104,8 @@
             <!-- GRID DE MÓDULOS -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 
-                <!-- 🌟 MÓDULO PRINCIPAL (NOMINAL RECHAZOS) -->
-                <a href="NOMINALRECHAZOS.html" class="bg-gradient-to-b from-amber-50 to-white rounded-xl shadow-lg p-6 border-t-8 border-amber-600 hover:shadow-xl transition group flex flex-col justify-between relative ring-2 ring-amber-500/50">
+                <!-- 🌟 MÓDULO PRINCIPAL (NominalRechazo.html) -->
+                <a href="NominalRechazo.html" class="bg-gradient-to-b from-amber-50 to-white rounded-xl shadow-lg p-6 border-t-8 border-amber-600 hover:shadow-xl transition group flex flex-col justify-between relative ring-2 ring-amber-500/50">
                     <span class="absolute -top-3 right-4 bg-amber-600 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase shadow">
                         ⭐ PRINCIPAL
                     </span>
@@ -189,109 +189,4 @@
 
     <!-- SCRIPT DE CONEXIÓN CON GOOGLE APPS SCRIPT -->
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbzvVdEGOq12YnsW3sNmo8O4cUwf8m5ubAj1VO3lKh87l3hBIN9horMOZrWJuJxp_Clg/exec";
-
-        let tempUserForPassword = "";
-
-        window.addEventListener("DOMContentLoaded", () => {
-            const savedUser = sessionStorage.getItem("sare_user");
-            const savedName = sessionStorage.getItem("sare_name");
-            if (savedUser) {
-                showDashboard(savedUser, savedName);
-            }
-        });
-
-        async function handleLogin(event) {
-            event.preventDefault();
-            const usuario = document.getElementById("username").value.trim();
-            const password = document.getElementById("password").value;
-            const errorMsg = document.getElementById("error-msg");
-            const loadingMsg = document.getElementById("loading-msg");
-
-            errorMsg.classList.add("hidden");
-            loadingMsg.classList.remove("hidden");
-
-            try {
-                const response = await fetch(API_URL, {
-                    method: "POST",
-                    body: JSON.stringify({ action: "login", usuario: usuario, password: password })
-                });
-                const result = await response.json();
-                loadingMsg.classList.add("hidden");
-
-                if (result.status === "success") {
-                    sessionStorage.setItem("sare_user", result.usuario);
-                    sessionStorage.setItem("sare_name", result.nombre);
-                    showDashboard(result.usuario, result.nombre);
-                } else if (result.status === "first_login") {
-                    tempUserForPassword = result.usuario;
-                    document.getElementById("welcome-user-name").textContent = `Usuario: ${result.nombre}`;
-                    document.getElementById("login-container").classList.add("hidden");
-                    document.getElementById("first-login-container").classList.remove("hidden");
-                } else {
-                    errorMsg.textContent = result.message || "Credenciales incorrectas.";
-                    errorMsg.classList.remove("hidden");
-                }
-            } catch (err) {
-                loadingMsg.classList.add("hidden");
-                errorMsg.textContent = "Error de conexión con el servidor.";
-                errorMsg.classList.remove("hidden");
-            }
-        }
-
-        async function handleSetPassword(event) {
-            event.preventDefault();
-            const p1 = document.getElementById("new-password").value;
-            const p2 = document.getElementById("confirm-password").value;
-            const passError = document.getElementById("pass-error-msg");
-
-            if (p1 !== p2) {
-                passError.textContent = "Las contraseñas no coinciden.";
-                passError.classList.remove("hidden");
-                return;
-            }
-            if (p1.length < 6) {
-                passError.textContent = "La contraseña debe tener al menos 6 caracteres.";
-                passError.classList.remove("hidden");
-                return;
-            }
-
-            try {
-                const response = await fetch(API_URL, {
-                    method: "POST",
-                    body: JSON.stringify({ action: "setPassword", usuario: tempUserForPassword, password: p1 })
-                });
-                const result = await response.json();
-
-                if (result.status === "success") {
-                    sessionStorage.setItem("sare_user", result.usuario);
-                    sessionStorage.setItem("sare_name", result.nombre);
-                    document.getElementById("first-login-container").classList.add("hidden");
-                    showDashboard(result.usuario, result.nombre);
-                } else {
-                    passError.textContent = result.message || "Error al guardar contraseña.";
-                    passError.classList.remove("hidden");
-                }
-            } catch (err) {
-                passError.textContent = "Error de conexión con el servidor.";
-                passError.classList.remove("hidden");
-            }
-        }
-
-        function showDashboard(usuario, nombre) {
-            document.getElementById("login-container").classList.add("hidden");
-            document.getElementById("first-login-container").classList.add("hidden");
-            document.getElementById("dashboard-container").classList.remove("hidden");
-            document.getElementById("header-user-info").classList.remove("hidden");
-            document.getElementById("header-user-info").classList.add("flex");
-            document.getElementById("user-display").textContent = `Folio: ${usuario}`;
-            document.getElementById("greeting-title").textContent = `Bienvenido, ${nombre}`;
-        }
-
-        function handleLogout() {
-            sessionStorage.clear();
-            window.location.reload();
-        }
-    </script>
-</body>
-</html>
+        const API_
