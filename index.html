@@ -95,89 +95,110 @@
         </div>
 
         <!-- 3. CONTENEDOR DEL MENÚ PRINCIPAL (DASHBOARD) -->
-        <div id="dashboard-container" class="space-y-6 hidden">
+        <div id="dashboard-container" class="space-y-8 hidden">
             <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-gob-primary">
                 <h2 id="greeting-title" class="text-xl font-bold text-gray-800 mb-1">Bienvenido al Sistema</h2>
-                <p class="text-xs text-gray-500">Seleccione el módulo institucional al que desea ingresar:</p>
+                <p class="text-xs text-gray-500">Seleccione el bloque operativo y el módulo al que desea ingresar:</p>
             </div>
 
-            <!-- GRID DE MÓDULOS -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                
-                <!-- 🌟 MÓDULO PRINCIPAL (NominalRechazo.html) -->
-                <a href="NominalRechazo.html" class="bg-gradient-to-b from-amber-50 to-white rounded-xl shadow-lg p-6 border-t-8 border-amber-600 hover:shadow-xl transition group flex flex-col justify-between relative ring-2 ring-amber-500/50">
-                    <span class="absolute -top-3 right-4 bg-amber-600 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase shadow">
-                        ⭐ PRINCIPAL
-                    </span>
-                    <div>
-                        <div class="w-12 h-12 bg-amber-600 text-white rounded-lg flex items-center justify-center font-bold text-xl mb-4 shadow">
-                            NR
-                        </div>
-                        <h3 class="text-lg font-black text-gray-900 group-hover:text-amber-700 transition">Filtro Nominal (Rechazos)</h3>
-                        <p class="text-xs text-gray-600 mt-1">Módulo principal de validación y filtrado por CURP para este periodo.</p>
+            <!-- BLOQUE 1: ATENCIÓN EN OFICINA (AHORA ARRIBA) -->
+            <div class="bg-gradient-to-b from-slate-50 to-white rounded-2xl shadow-md p-6 border border-slate-300 space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xl">🏢</span>
+                        <h3 class="text-base font-bold text-slate-800 uppercase tracking-wide">Bloque 1: Atención en Oficina</h3>
                     </div>
-                    <span class="text-amber-700 text-xs font-bold mt-6 inline-flex items-center">
-                        Acceder al módulo principal &rarr;
-                    </span>
-                </a>
+                    <span class="bg-slate-700 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">Oficina</span>
+                </div>
 
-                <!-- Tarjeta Filtro Nominal Original -->
-                <a href="FiltrosSare.html" class="bg-white rounded-xl shadow-md p-6 border-t-4 border-emerald-600 hover:shadow-lg transition group flex flex-col justify-between">
-                    <div>
-                        <div class="w-12 h-12 bg-emerald-50 text-emerald-700 rounded-lg flex items-center justify-center font-bold text-xl mb-4 group-hover:bg-emerald-600 group-hover:text-white transition">
-                            F
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Submódulo 1: Módulo de Vigencia -->
+                    <a href="Vigencia.html" class="bg-white rounded-xl shadow p-4 border-t-4 border-[#691C32] hover:shadow-md transition group flex flex-col justify-between">
+                        <div>
+                            <h4 class="text-sm font-bold text-gray-900 group-hover:text-[#691C32] transition">Módulo de Vigencia</h4>
+                            <p class="text-[11px] text-gray-500 mt-1">Revisar estado de vigencia.</p>
                         </div>
-                        <h3 class="text-lg font-bold text-gray-800 group-hover:text-emerald-700 transition">Filtro Nominal (Original)</h3>
-                        <p class="text-xs text-gray-500 mt-1">Filtrar tarjetas que se encuentran en la SARE (base anterior).</p>
-                    </div>
-                    <span class="text-emerald-700 text-xs font-semibold mt-6 inline-flex items-center">
-                        Acceder al módulo &rarr;
-                    </span>
-                </a>
+                        <span class="text-[#691C32] text-xs font-semibold mt-4 inline-flex items-center">
+                            Acceder &rarr;
+                        </span>
+                    </a>
 
-                <!-- Tarjeta Vigencia -->
-                <a href="Vigencia.html" class="bg-white rounded-xl shadow-md p-6 border-t-4 border-gob-primary hover:shadow-lg transition group flex flex-col justify-between">
-                    <div>
-                        <div class="w-12 h-12 bg-red-50 text-gob-primary rounded-lg flex items-center justify-center font-bold text-xl mb-4 group-hover:bg-[#691C32] group-hover:text-white transition">
-                            V
+                    <!-- Submódulo 2: Módulo de Rechazados Oficina -->
+                    <a href="Rechazo.html" class="bg-white rounded-xl shadow p-4 border-t-4 border-amber-500 hover:shadow-lg transition group flex flex-col justify-between">
+                        <div>
+                            <h4 class="text-sm font-bold text-gray-800 group-hover:text-amber-700 transition">Módulo de Rechazos</h4>
+                            <p class="text-[11px] text-gray-500 mt-1">Revisión de remplazo de tarjeta.</p>
                         </div>
-                        <h3 class="text-lg font-bold text-gray-800 group-hover:text-[#691C32] transition">Módulo de Vigencia</h3>
-                        <p class="text-xs text-gray-500 mt-1">Revisar el estado de vigencia para ver si se puede entregar o no.</p>
-                    </div>
-                    <span class="text-gob-primary text-xs font-semibold mt-6 inline-flex items-center">
-                        Acceder al módulo &rarr;
-                    </span>
-                </a>
+                        <span class="text-amber-700 text-xs font-semibold mt-4 inline-flex items-center">
+                            Acceder &rarr;
+                        </span>
+                    </a>
 
-                <!-- Tarjeta Rechazo -->
-                <a href="Rechazo.html" class="bg-white rounded-xl shadow-md p-6 border-t-4 border-amber-500 hover:shadow-lg transition group flex flex-col justify-between">
-                    <div>
-                        <div class="w-12 h-12 bg-amber-50 text-amber-700 rounded-lg flex items-center justify-center font-bold text-xl mb-4 group-hover:bg-amber-600 group-hover:text-white transition">
-                            R
+                    <!-- Submódulo 3: Salida de Tarjetas Oficina -->
+                    <a href="SALIDA.html" class="bg-white rounded-xl shadow p-4 border-t-4 border-blue-600 hover:shadow-lg transition group flex flex-col justify-between">
+                        <div>
+                            <h4 class="text-sm font-bold text-gray-800 group-hover:text-blue-700 transition">Salida de Tarjetas (Oficina)</h4>
+                            <p class="text-[11px] text-gray-500 mt-1">Escaneo de inventario saliente.</p>
                         </div>
-                        <h3 class="text-lg font-bold text-gray-800 group-hover:text-amber-700 transition">Módulo de Rechazos</h3>
-                        <p class="text-xs text-gray-500 mt-1">Revisar becarios con situación de remplazo de tarjeta.</p>
-                    </div>
-                    <span class="text-amber-700 text-xs font-semibold mt-6 inline-flex items-center">
-                        Acceder al módulo &rarr;
-                    </span>
-                </a>
+                        <span class="text-blue-700 text-xs font-semibold mt-4 inline-flex items-center">
+                            Acceder &rarr;
+                        </span>
+                    </a>
 
-                <!-- Tarjeta Salidas -->
-                <a href="SALIDA.html" class="bg-white rounded-xl shadow-md p-6 border-t-4 border-blue-600 hover:shadow-lg transition group flex flex-col justify-between">
-                    <div>
-                        <div class="w-12 h-12 bg-blue-50 text-blue-700 rounded-lg flex items-center justify-center font-bold text-xl mb-4 group-hover:bg-blue-600 group-hover:text-white transition">
-                            📦
+                    <!-- Submódulo 4: Filtro Nominal Original -->
+                    <a href="FiltrosSare.html" class="bg-white rounded-xl shadow p-4 border-t-4 border-emerald-600 hover:shadow-lg transition group flex flex-col justify-between">
+                        <div>
+                            <h4 class="text-sm font-bold text-gray-800 group-hover:text-emerald-700 transition">Filtro Nominal Original</h4>
+                            <p class="text-[11px] text-gray-500 mt-1">Tarjetas en base anterior.</p>
                         </div>
-                        <h3 class="text-lg font-bold text-gray-800 group-hover:text-blue-700 transition">Salida de Tarjetas</h3>
-                        <p class="text-xs text-gray-500 mt-1">Escaneo rápido de códigos de barras para control y registro de inventario saliente.</p>
-                    </div>
-                    <span class="text-blue-700 text-xs font-semibold mt-6 inline-flex items-center">
-                        Acceder al módulo &rarr;
-                    </span>
-                </a>
-
+                        <span class="text-emerald-700 text-xs font-semibold mt-4 inline-flex items-center">
+                            Acceder &rarr;
+                        </span>
+                    </a>
+                </div>
             </div>
+
+            <!-- BLOQUE 2: OPERATIVO OCT 2026 (TARJETAS REEMPLAZADAS) (AHORA ABAJO) -->
+            <div class="bg-gradient-to-b from-amber-50/60 to-white rounded-2xl shadow-md p-6 border-2 border-amber-500 space-y-4">
+                <div class="flex items-center justify-between border-b border-amber-200 pb-3">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xl">⭐</span>
+                        <h3 class="text-base font-black text-amber-900 uppercase tracking-wide">Bloque 2: Operativo Oct 2026 (Tarjetas Reemplazadas)</h3>
+                    </div>
+                    <span class="bg-amber-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase shadow">Operativo</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Submódulo 1: Filtro de Rechazados -->
+                    <a href="NominalRechazo.html" class="bg-white rounded-xl shadow p-5 border-l-4 border-amber-600 hover:shadow-md transition group flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center space-x-2 text-amber-700 font-bold text-xs uppercase mb-1">
+                                <span>🔍</span> <span>Submódulo de Búsqueda</span>
+                            </div>
+                            <h4 class="text-base font-bold text-gray-900 group-hover:text-amber-700 transition">Página de Filtro de Rechazados</h4>
+                            <p class="text-xs text-gray-500 mt-1">Validación y búsqueda rápida de beneficiarios por CURP.</p>
+                        </div>
+                        <span class="text-amber-700 text-xs font-bold mt-4 inline-flex items-center">
+                            Ingresar &rarr;
+                        </span>
+                    </a>
+
+                    <!-- Submódulo 2: Salidas de Tarjetas Operativo -->
+                    <a href="SalidaOperativo.html" class="bg-white rounded-xl shadow p-5 border-l-4 border-emerald-600 hover:shadow-md transition group flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center space-x-2 text-emerald-700 font-bold text-xs uppercase mb-1">
+                                <span>📦</span> <span>Submódulo de Control</span>
+                            </div>
+                            <h4 class="text-base font-bold text-gray-900 group-hover:text-emerald-700 transition">Página de Salidas de Tarjetas (Operativo)</h4>
+                            <p class="text-xs text-gray-500 mt-1">Escaneo en ráfaga, control de folios y canasta de devoluciones.</p>
+                        </div>
+                        <span class="text-emerald-700 text-xs font-bold mt-4 inline-flex items-center">
+                            Ingresar &rarr;
+                        </span>
+                    </a>
+                </div>
+            </div>
+
         </div>
 
     </main>
@@ -230,12 +251,12 @@
                     document.getElementById("first-login-container").classList.remove("hidden");
                 } else {
                     errorMsg.textContent = result.message || "Credenciales incorrectas.";
-                    errorMsg.classList.remove("hidden");
+                    errorMsg.classList.add("hidden");
                 }
             } catch (err) {
                 loadingMsg.classList.add("hidden");
                 errorMsg.textContent = "Error de conexión con el servidor.";
-                errorMsg.classList.remove("hidden");
+                errorMsg.classList.add("hidden");
             }
         }
 
