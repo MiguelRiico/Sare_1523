@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Inventario - SARE 1523</title>
+    <title>Salida Operativo - SARE 1523</title>
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -31,7 +31,7 @@
                     GOBIERNO DE MÉXICO
                 </div>
                 <div>
-                    <h1 class="text-lg font-semibold leading-tight">Control de Inventario de Tarjetas</h1>
+                    <h1 class="text-lg font-semibold leading-tight">Salida Operativo de Tarjetas</h1>
                     <p id="infoOperadorHeader" class="text-xs text-red-200">Operador: Cargando...</p>
                 </div>
             </div>
@@ -48,7 +48,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="bg-white rounded-xl shadow p-4 border-l-4 border-emerald-600 flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-bold text-slate-400 uppercase">Salidas Exitosas</p>
+                    <p class="text-xs font-bold text-slate-400 uppercase">Salidas Operativo</p>
                     <h3 id="contadorSalidasNetas" class="text-2xl font-black text-emerald-700">0</h3>
                 </div>
                 <span class="text-2xl">📦</span>
@@ -72,10 +72,10 @@
         <!-- Selector de Pestañas -->
         <div class="bg-white rounded-xl shadow-md p-2 border-t-4 border-gob-primary grid grid-cols-2 gap-2">
             <button onclick="cambiarSeccion('salidas')" id="tabSalidas" class="py-2.5 rounded-lg text-sm font-bold bg-[#691C32] text-white shadow transition text-center">
-                📦 1. Salidas de Tarjetas
+                📦 1. Salidas Operativo
             </button>
             <button onclick="intentarAbrirCanastita()" id="tabCanastita" class="py-2.5 rounded-lg text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center">
-                📥 2. Canasta (Fin de Día)
+                📥 2. Canasta (Devoluciones)
             </button>
         </div>
 
@@ -85,10 +85,10 @@
                 <div class="w-12 h-12 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center font-bold text-2xl mx-auto">
                     ⚠️
                 </div>
-                <h3 class="text-lg font-bold text-gray-900">Aviso Importante: Corte Fin de Día</h3>
+                <h3 class="text-lg font-bold text-gray-900">Aviso Importante: Devoluciones Operativo</h3>
                 <p class="text-xs text-slate-600 text-left leading-relaxed bg-amber-50 p-3 rounded-lg border border-amber-200">
-                    Esta función de <strong>Canasta</strong> sirve exclusivamente para <strong>descontar y registrar</strong> tarjetas que se pistolearon previamente pero que <strong>no se pudieron entregar</strong>.<br><br>
-                    📌 <em>Cada tarjeta mostrará sus datos para confirmar el envío a la bitácora de auditoría.</em>
+                    Esta función de <strong>Canasta</strong> sirve exclusivamente para <strong>descontar y registrar</strong> folios que no se pudieron entregar en campo.<br><br>
+                    📌 <em>Cada folio escaneado mostrará sus datos para confirmar el envío a auditoría.</em>
                 </p>
                 <div class="grid grid-cols-2 gap-3 pt-2">
                     <button onclick="cerrarModalAdvertencia()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2.5 rounded-xl text-xs transition">
@@ -133,7 +133,7 @@
         <!-- SECCIÓN 1: SALIDAS -->
         <div id="seccionSalidas" class="bg-white rounded-xl shadow-md p-6 border border-slate-200 space-y-4">
             <div class="flex justify-between items-center flex-wrap gap-2">
-                <h2 class="text-sm font-bold text-gray-700 uppercase">Módulo de Salidas</h2>
+                <h2 class="text-sm font-bold text-gray-700 uppercase">Módulo de Salidas Operativo</h2>
                 <div class="flex items-center space-x-2 bg-slate-100 p-1.5 rounded-lg border border-slate-200">
                     <span class="text-xs font-bold text-slate-600 ml-1">Modo:</span>
                     <button onclick="setModoIngreso('auto')" id="btnModoAuto" class="text-xs px-3 py-1 rounded font-bold bg-[#691C32] text-white transition">⚡ Pistola (Auto)</button>
@@ -143,11 +143,11 @@
 
             <div id="instruccionSalida" class="bg-emerald-50 border border-emerald-200 p-3 rounded-lg text-xs text-emerald-900">
                 <p class="font-bold mb-1">📌 Instrucción (Modo Automático / Ráfaga):</p>
-                <p>Pase la pistola por el código de barras. El registro se enviará y limpiará de inmediato.</p>
+                <p>Pase la pistola por el código del folio. El registro se enviará y limpiará de inmediato.</p>
             </div>
 
             <div class="max-w-md mx-auto pt-2 space-y-3">
-                <input type="text" id="codigoSalidaInput" placeholder="Escanee tarjeta saliente..." 
+                <input type="text" id="codigoSalidaInput" placeholder="Escanee folio saliente..." 
                     oninput="procesarEntrada(this, 'salida')" autofocus
                     class="w-full text-center uppercase tracking-widest font-mono text-lg border-2 border-slate-300 rounded-xl px-4 py-4 text-gray-800 focus:outline-none focus:border-[#691C32] shadow-inner bg-slate-50">
                 
@@ -160,14 +160,14 @@
         <!-- SECCIÓN 2: CANASTA -->
         <div id="seccionCanastita" class="bg-white rounded-xl shadow-md p-6 border border-amber-400 space-y-4 hidden">
             <div class="text-center space-y-2">
-                <h2 class="text-sm font-bold text-amber-800 uppercase">Corte Fin de Día - Canasta (Devoluciones)</h2>
+                <h2 class="text-sm font-bold text-amber-800 uppercase">Canasta Operativo (Devoluciones)</h2>
                 <div class="bg-amber-50 border border-amber-200 p-3 rounded-lg text-xs text-amber-900 text-left max-w-lg mx-auto">
                     <p class="font-bold mb-1">📌 Modo Canasta Activo:</p>
-                    <p>Escanee la tarjeta no entregada. Se validarán sus datos antes de moverla a la bitácora de auditoría.</p>
+                    <p>Escanee el folio no entregado. Se validarán sus datos antes de moverla a la bitácora de auditoría.</p>
                 </div>
             </div>
             <div class="max-w-md mx-auto pt-2">
-                <input type="text" id="codigoCanastitaInput" placeholder="Escanee tarjeta devuelta..." 
+                <input type="text" id="codigoCanastitaInput" placeholder="Escanee folio devuelto..." 
                     oninput="procesarEntrada(this, 'canastita')"
                     class="w-full text-center uppercase tracking-widest font-mono text-lg border-2 border-amber-400 rounded-xl px-4 py-4 text-gray-800 focus:outline-none focus:border-amber-600 shadow-inner bg-amber-50">
             </div>
@@ -204,7 +204,7 @@
                     <thead class="bg-slate-50 text-slate-600 uppercase font-bold">
                         <tr>
                             <th class="p-2">Hora</th>
-                            <th class="p-2">Folio / Tarjeta</th>
+                            <th class="p-2">Folio</th>
                             <th class="p-2">Nombre Beneficiario</th>
                             <th class="p-2">CCT</th>
                         </tr>
@@ -226,7 +226,7 @@
 
     <!-- SCRIPT DE CONTROL -->
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbzkur3pTwJUg9j7DyX-UiYtECo1H8Yp_UZmVN9MMnS5l1-eF-gxH3huQ-1LdwaGLw8v/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbzYh32u2I04q7muMhgfKkZ6nL4k38ckteULLAyaN3eDoYkMBPObroqSDmjMTmNg6LNc0w/exec"; // Reemplaza por tu enlace de despliegue si creaste un script nuevo para operativo
         
         let usuarioActual = sessionStorage.getItem("sare_name") || "Desconocido";
         let usuarioFolio = sessionStorage.getItem("sare_user") || "S/D";
@@ -239,10 +239,9 @@
 
         window.addEventListener("DOMContentLoaded", () => {
             document.getElementById("infoOperadorHeader").textContent = `Operador: ${usuarioActual} (Folio: ${usuarioFolio})`;
-            sincronizarHistorialDia(); // Sincroniza al abrir la página
+            sincronizarHistorialDia();
         });
 
-        // FUNCIÓN DE SINCRONIZAR HISTORIAL DEL DÍA
         async function sincronizarHistorialDia() {
             try {
                 const response = await fetch(API_URL, {
@@ -335,7 +334,7 @@
                 btnManual.className = "text-xs px-3 py-1 rounded font-bold bg-amber-600 text-white transition";
                 btnAuto.className = "text-xs px-3 py-1 rounded font-bold bg-transparent text-slate-600 transition";
                 btnEnviar.classList.remove('hidden');
-                instruccion.innerHTML = `<p class="font-bold mb-1">📌 Instrucción (Modo Teclado / Manual):</p><p>Escriba o corrija los 16 dígitos con calma y dé clic en el botón verde para enviar.</p>`;
+                instruccion.innerHTML = `<p class="font-bold mb-1">📌 Instrucción (Modo Teclado / Manual):</p><p>Escriba o corrija los dígitos con calma y dé clic en el botón verde para enviar.</p>`;
             }
             input.focus();
         }
@@ -355,10 +354,10 @@
             if (procesando) return;
             let codigo = input.value.trim();
             
-            if (tipo === 'salida' && modoIngreso === 'auto' && codigo.length >= 16) {
+            if (tipo === 'salida' && modoIngreso === 'auto' && codigo.length >= 10) {
                 procesando = true;
                 enviarServidor(codigo, tipo);
-            } else if (tipo === 'canastita' && codigo.length >= 16) {
+            } else if (tipo === 'canastita' && codigo.length >= 10) {
                 procesando = true;
                 consultarParaCanastita(codigo);
             }
@@ -367,8 +366,8 @@
         function enviarManualSalida() {
             const input = document.getElementById("codigoSalidaInput");
             let codigo = input.value.trim();
-            if (codigo.length < 10) {
-                mostrarError("Ingrese un código de tarjeta válido.");
+            if (codigo.length < 5) {
+                mostrarError("Ingrese un código de folio válido.");
                 return;
             }
             procesando = true;
@@ -423,19 +422,6 @@
         async function ejecutarBorradoCanastita() {
             document.getElementById("modalConfirmarBorrado").classList.add("hidden");
             
-            try {
-                const response = await fetch(API_URL, {
-                    method: "POST",
-                    body: JSON.stringify({ 
-                        action: confirmarBorradoSalida, 
-                        codigo: folioPendienteBorrar,
-                        usuario: `${usuarioActual} (${usuarioFolio})`
-                    })
-                });
-                // Nota: Asegurar nombre exacto de la acción en el fetch
-                // Se ajusta en la siguiente línea:
-            } catch (err) {}
-
             try {
                 const response = await fetch(API_URL, {
                     method: "POST",
@@ -517,7 +503,7 @@
             alerta.classList.remove('hidden');
             
             if (tipo === 'salida') {
-                badge.textContent = "SALIDA REGISTRADA";
+                badge.textContent = "SALIDA OPERATIVO REGISTRADA";
                 badge.className = "bg-emerald-200 text-emerald-900 text-[10px] font-bold px-2 py-0.5 rounded";
             } else {
                 badge.textContent = "ENVIADO A CANASTA (AUDITORÍA)";
