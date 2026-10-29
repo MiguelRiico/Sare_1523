@@ -101,21 +101,37 @@
                 <p class="text-xs text-gray-500">Seleccione el módulo institucional al que desea ingresar:</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <!-- Tarjeta DESTACADA: Filtro Nominal (Rechazos) -> Principal en este periodo -->
-                <a href="FiltroSare.html" class="bg-gradient-to-b from-amber-50 to-white rounded-xl shadow-lg p-6 border-t-8 border-amber-600 hover:shadow-xl transition group flex flex-col justify-between relative ring-2 ring-amber-500/50">
+            <!-- GRID DE MÓDULOS -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <!-- 🌟 NUEVO MÓDULO DESTACADO (PRINCIPAL EN ESTE PERIODO) -->
+                <a href="NOMINAL RECHAZOS.html" class="bg-gradient-to-b from-amber-50 to-white rounded-xl shadow-lg p-6 border-t-8 border-amber-600 hover:shadow-xl transition group flex flex-col justify-between relative ring-2 ring-amber-500/50">
                     <span class="absolute -top-3 right-4 bg-amber-600 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase shadow">
                         ⭐ PRINCIPAL
                     </span>
                     <div>
                         <div class="w-12 h-12 bg-amber-600 text-white rounded-lg flex items-center justify-center font-bold text-xl mb-4 shadow">
-                            F
+                            NR
                         </div>
                         <h3 class="text-lg font-black text-gray-900 group-hover:text-amber-700 transition">Filtro Nominal (Rechazos)</h3>
                         <p class="text-xs text-gray-600 mt-1">Módulo principal de validación y filtrado por CURP para este periodo.</p>
                     </div>
                     <span class="text-amber-700 text-xs font-bold mt-6 inline-flex items-center">
                         Acceder al módulo principal &rarr;
+                    </span>
+                </a>
+
+                <!-- Tarjeta Filtro Nominal Original -->
+                <a href="FiltrosSare.html" class="bg-white rounded-xl shadow-md p-6 border-t-4 border-emerald-600 hover:shadow-lg transition group flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 bg-emerald-50 text-emerald-700 rounded-lg flex items-center justify-center font-bold text-xl mb-4 group-hover:bg-emerald-600 group-hover:text-white transition">
+                            F
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-800 group-hover:text-emerald-700 transition">Filtro Nominal (Original)</h3>
+                        <p class="text-xs text-gray-500 mt-1">Filtrar tarjetas que se encuentran en la SARE (base anterior).</p>
+                    </div>
+                    <span class="text-emerald-700 text-xs font-semibold mt-6 inline-flex items-center">
+                        Acceder al módulo &rarr;
                     </span>
                 </a>
 
@@ -160,6 +176,7 @@
                         Acceder al módulo &rarr;
                     </span>
                 </a>
+
             </div>
         </div>
 
@@ -218,7 +235,7 @@
             } catch (err) {
                 loadingMsg.classList.add("hidden");
                 errorMsg.textContent = "Error de conexión con el servidor.";
-                errorMsg.classList.add("hidden");
+                errorMsg.classList.remove("hidden");
             }
         }
 
@@ -239,42 +256,4 @@
                 return;
             }
 
-            try {
-                const response = await fetch(API_URL, {
-                    method: "POST",
-                    body: JSON.stringify({ action: "setPassword", usuario: tempUserForPassword, password: p1 })
-                });
-                const result = await response.json();
-
-                if (result.status === "success") {
-                    sessionStorage.setItem("sare_user", result.usuario);
-                    sessionStorage.setItem("sare_name", result.nombre);
-                    document.getElementById("first-login-container").classList.add("hidden");
-                    showDashboard(result.usuario, result.nombre);
-                } else {
-                    passError.textContent = result.message || "Error al guardar contraseña.";
-                    passError.classList.remove("hidden");
-                }
-            } catch (err) {
-                passError.textContent = "Error de conexión con el servidor.";
-                passError.classList.remove("hidden");
-            }
-        }
-
-        function showDashboard(usuario, nombre) {
-            document.getElementById("login-container").classList.add("hidden");
-            document.getElementById("first-login-container").classList.add("hidden");
-            document.getElementById("dashboard-container").classList.remove("hidden");
-            document.getElementById("header-user-info").classList.remove("hidden");
-            document.getElementById("header-user-info").classList.add("flex");
-            document.getElementById("user-display").textContent = `Folio: ${usuario}`;
-            document.getElementById("greeting-title").textContent = `Bienvenido, ${nombre}`;
-        }
-
-        function handleLogout() {
-            sessionStorage.clear();
-            window.location.reload();
-        }
-    </script>
-</body>
-</html>
+            try
