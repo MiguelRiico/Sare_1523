@@ -239,10 +239,9 @@
 
         window.addEventListener("DOMContentLoaded", () => {
             document.getElementById("infoOperadorHeader").textContent = `Operador: ${usuarioActual} (Folio: ${usuarioFolio})`;
-            sincronizarHistorialDia(); // Sincroniza al abrir la página
+            sincronizarHistorialDia();
         });
 
-        // FUNCIÓN DE SINCRONIZAR HISTORIAL DEL DÍA
         async function sincronizarHistorialDia() {
             try {
                 const response = await fetch(API_URL, {
@@ -422,19 +421,6 @@
 
         async function ejecutarBorradoCanastita() {
             document.getElementById("modalConfirmarBorrado").classList.add("hidden");
-            
-            try {
-                const response = await fetch(API_URL, {
-                    method: "POST",
-                    body: JSON.stringify({ 
-                        action: confirmarBorradoSalida, 
-                        codigo: folioPendienteBorrar,
-                        usuario: `${usuarioActual} (${usuarioFolio})`
-                    })
-                });
-                // Nota: Asegurar nombre exacto de la acción en el fetch
-                // Se ajusta en la siguiente línea:
-            } catch (err) {}
 
             try {
                 const response = await fetch(API_URL, {
