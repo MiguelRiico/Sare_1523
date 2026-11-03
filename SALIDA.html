@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Inventario - SARE 1523</title>
-    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Salida Oficina - SARE 1523</title>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: 'Public Sans', sans-serif; background-color: #f8fafc; }
+        body { font-family: 'Public Sans', sans-serif; background-color: #f1f5f9; }
         .bg-gob-primary { background-color: #691C32; }
         .text-gob-primary { color: #691C32; }
         .border-gob-primary { border-color: #691C32; }
@@ -23,80 +23,75 @@
         }
     </script>
 
-    <!-- HEADER -->
-    <header class="bg-gob-primary text-white shadow-md">
-        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+    <!-- HEADER SÚPER DISTINTIVO Y GRANDE PARA OFICINA -->
+    <header class="bg-slate-900 text-white shadow-xl border-b-4 border-blue-600">
+        <div class="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center flex-wrap gap-4">
             <div class="flex items-center space-x-4">
-                <div class="bg-white text-gob-primary font-bold px-3 py-2 text-xs rounded shadow">
-                    GOBIERNO DE MÉXICO
+                <div class="bg-blue-600 text-white font-black px-4 py-3 text-sm rounded-xl shadow uppercase tracking-wider">
+                    🏢 OFICINA
                 </div>
                 <div>
-                    <h1 class="text-lg font-semibold leading-tight">Control de Inventario de Tarjetas</h1>
-                    <p id="infoOperadorHeader" class="text-xs text-red-200">Operador: Cargando...</p>
+                    <h1 class="text-2xl font-extrabold tracking-tight text-white">CONTROL DE INVENTARIO Y SALIDAS (OFICINA)</h1>
+                    <p id="infoOperadorHeader" class="text-xs text-blue-200 font-medium">Operador: Cargando...</p>
                 </div>
             </div>
-            <a href="index.html" class="bg-amber-500 hover:bg-amber-600 text-white font-medium text-xs px-4 py-2 rounded shadow transition">
-                &larr; Volver al Menú
+            <a href="index.html" class="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow transition">
+                &larr; Volver al Menú Principal
             </a>
         </div>
     </header>
 
     <!-- CONTENIDO PRINCIPAL -->
-    <main class="max-w-4xl w-full mx-auto p-4 flex-grow space-y-6">
+    <main class="max-w-5xl w-full mx-auto p-4 flex-grow space-y-6">
 
-        <!-- DASHBOARD DE CONTADORES Y BOTÓN DE SINCRONIZAR -->
+        <!-- DASHBOARD DE CONTADORES Y SINCRONIZAR -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-white rounded-xl shadow p-4 border-l-4 border-emerald-600 flex items-center justify-between">
+            <div class="bg-white rounded-2xl shadow-md p-5 border-l-8 border-emerald-600 flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-bold text-slate-400 uppercase">Salidas Exitosas</p>
-                    <h3 id="contadorSalidasNetas" class="text-2xl font-black text-emerald-700">0</h3>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Salidas Exitosas (Oficina)</p>
+                    <h3 id="contadorSalidasNetas" class="text-3xl font-black text-emerald-700">0</h3>
                 </div>
-                <span class="text-2xl">📦</span>
+                <span class="text-3xl">📦</span>
             </div>
-            <div class="bg-white rounded-xl shadow p-4 border-l-4 border-amber-500 flex items-center justify-between">
+            <div class="bg-white rounded-2xl shadow-md p-5 border-l-8 border-amber-500 flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-bold text-slate-400 uppercase">Canasta (Devueltas)</p>
-                    <h3 id="contadorDevueltas" class="text-2xl font-black text-amber-700">0</h3>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Canasta (Devoluciones)</p>
+                    <h3 id="contadorDevueltas" class="text-3xl font-black text-amber-700">0</h3>
                 </div>
-                <span class="text-2xl">📥</span>
+                <span class="text-3xl">📥</span>
             </div>
-            <!-- BOTÓN DE SINCRONIZAR / REFRESCAR -->
-            <div class="bg-white rounded-xl shadow p-3 border border-slate-200 flex flex-col justify-center items-center">
-                <button onclick="sincronizarHistorialDia()" class="w-full bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold py-2.5 px-3 rounded-lg shadow transition flex items-center justify-center space-x-2">
+            <div class="bg-white rounded-2xl shadow-md p-4 border border-slate-200 flex flex-col justify-center items-center">
+                <button onclick="sincronizarHistorialDia()" class="w-full bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold py-3 px-4 rounded-xl shadow transition flex items-center justify-center space-x-2">
                     <span>🔄 Sincronizar Historial</span>
                 </button>
-                <span class="text-[10px] text-slate-400 mt-1">Recupera registros si se recarga la página</span>
+                <span class="text-[10px] text-slate-400 mt-1">Recupera registros del día actual</span>
             </div>
         </div>
 
-        <!-- Selector de Pestañas -->
-        <div class="bg-white rounded-xl shadow-md p-2 border-t-4 border-gob-primary grid grid-cols-2 gap-2">
-            <button onclick="cambiarSeccion('salidas')" id="tabSalidas" class="py-2.5 rounded-lg text-sm font-bold bg-[#691C32] text-white shadow transition text-center">
-                📦 1. Salidas de Tarjetas
+        <!-- SELECTOR DE PESTAÑAS GRANDE Y VISIBLE -->
+        <div class="bg-white rounded-2xl shadow-md p-3 border-t-4 border-blue-600 grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <button onclick="cambiarSeccion('salidas')" id="tabSalidas" class="py-3.5 px-4 rounded-xl text-sm font-extrabold bg-blue-600 text-white shadow-md transition text-center flex items-center justify-center space-x-2">
+                <span>📦</span> <span>1. Salidas (Pistola)</span>
             </button>
-            <button onclick="intentarAbrirCanastita()" id="tabCanastita" class="py-2.5 rounded-lg text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center">
-                📥 2. Canasta (Fin de Día)
+            <button onclick="cambiarSeccion('masiva')" id="tabMasiva" class="py-3.5 px-4 rounded-xl text-sm font-extrabold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center flex items-center justify-center space-x-2">
+                <span>📋</span> <span>2. Carga Masiva (Lotes)</span>
+            </button>
+            <button onclick="intentarAbrirCanastita()" id="tabCanastita" class="py-3.5 px-4 rounded-xl text-sm font-extrabold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center flex items-center justify-center space-x-2">
+                <span>📥</span> <span>3. Canasta (Devoluciones)</span>
             </button>
         </div>
 
-        <!-- MODAL DE ADVERTENCIA OBLIGATORIA PARA CANASTITA -->
+        <!-- MODAL DE ADVERTENCIA PARA CANASTITA -->
         <div id="modalAdvertencia" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
             <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border-t-8 border-amber-600 space-y-4 text-center">
-                <div class="w-12 h-12 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center font-bold text-2xl mx-auto">
-                    ⚠️
-                </div>
-                <h3 class="text-lg font-bold text-gray-900">Aviso Importante: Corte Fin de Día</h3>
+                <div class="w-12 h-12 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center font-bold text-2xl mx-auto">⚠️</div>
+                <h3 class="text-lg font-bold text-gray-900">Aviso: Canasta (Devoluciones Oficina)</h3>
                 <p class="text-xs text-slate-600 text-left leading-relaxed bg-amber-50 p-3 rounded-lg border border-amber-200">
-                    Esta función de <strong>Canasta</strong> sirve exclusivamente para <strong>descontar y registrar</strong> tarjetas que se pistolearon previamente pero que <strong>no se pudieron entregar</strong>.<br><br>
-                    📌 <em>Cada tarjeta mostrará sus datos para confirmar el envío a la bitácora de auditoría.</em>
+                    Esta función sirve exclusivamente para <strong>descontar y registrar</strong> tarjetas de oficina que no se entregaron y van a auditoría.
                 </p>
                 <div class="grid grid-cols-2 gap-3 pt-2">
-                    <button onclick="cerrarModalAdvertencia()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2.5 rounded-xl text-xs transition">
-                        Cancelar
-                    </button>
-                    <button onclick="confirmarAbrirCanastita()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-xl text-xs shadow transition">
-                        Entendido, Abrir Canasta
-                    </button>
+                    <button onclick="cerrarModalAdvertencia()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2.5 rounded-xl text-xs transition">Cancelar</button>
+                    <button onclick="confirmarAbrirCanastita()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-xl text-xs shadow transition">Entendido, Abrir</button>
                 </div>
             </div>
         </div>
@@ -107,97 +102,111 @@
                 <div class="flex items-center space-x-3 border-b pb-3">
                     <span class="text-3xl">🗑️</span>
                     <div>
-                        <h3 class="text-base font-bold text-red-800">Confirmación de Envío a Canasta</h3>
+                        <h3 class="text-base font-bold text-red-800">Confirmación de Envío a Canasta (Oficina)</h3>
                         <p class="text-xs text-slate-500">Se registrará en auditoría y se descontará de salidas:</p>
                     </div>
                 </div>
-
                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 text-xs">
                     <p><strong>BENEFICIARIO:</strong> <span id="delNombre" class="text-sm font-bold text-gray-900"></span></p>
                     <p><strong>FOLIO:</strong> <span id="delFolio" class="font-mono font-bold text-red-700"></span></p>
                     <p><strong>CCT:</strong> <span id="delCct" class="font-mono"></span> | <strong>MUNICIPIO:</strong> <span id="delMunicipio"></span></p>
                     <p><strong>OPERADOR ORIGINAL:</strong> <span id="delOperadorOrig" class="font-semibold text-slate-700"></span></p>
                 </div>
-
                 <div class="grid grid-cols-2 gap-3 pt-2">
-                    <button onclick="cancelarBorradoCanastita()" class="bg-slate-300 hover:bg-slate-400 text-slate-800 font-bold py-3 rounded-xl text-xs transition">
-                        ❌ NO, Cancelar
-                    </button>
-                    <button onclick="ejecutarBorradoCanastita()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl text-xs shadow transition">
-                        ✔️ SÍ, Enviar a Canasta
-                    </button>
+                    <button onclick="cancelarBorradoCanastita()" class="bg-slate-300 hover:bg-slate-400 text-slate-800 font-bold py-3 rounded-xl text-xs transition">❌ NO, Cancelar</button>
+                    <button onclick="ejecutarBorradoCanastita()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl text-xs shadow transition">✔️ SÍ, Enviar a Canasta</button>
                 </div>
             </div>
         </div>
 
-        <!-- SECCIÓN 1: SALIDAS -->
-        <div id="seccionSalidas" class="bg-white rounded-xl shadow-md p-6 border border-slate-200 space-y-4">
+        <!-- SECCIÓN 1: SALIDAS (PISTOLA RÁFAGA) -->
+        <div id="seccionSalidas" class="bg-white rounded-2xl shadow-md p-6 border border-slate-200 space-y-4">
             <div class="flex justify-between items-center flex-wrap gap-2">
-                <h2 class="text-sm font-bold text-gray-700 uppercase">Módulo de Salidas</h2>
-                <div class="flex items-center space-x-2 bg-slate-100 p-1.5 rounded-lg border border-slate-200">
+                <h2 class="text-base font-extrabold text-slate-800 uppercase tracking-wide">📦 Módulo de Salidas de Tarjetas (Oficina)</h2>
+                <div class="flex items-center space-x-2 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
                     <span class="text-xs font-bold text-slate-600 ml-1">Modo:</span>
-                    <button onclick="setModoIngreso('auto')" id="btnModoAuto" class="text-xs px-3 py-1 rounded font-bold bg-[#691C32] text-white transition">⚡ Pistola (Auto)</button>
-                    <button onclick="setModoIngreso('manual')" id="btnModoManual" class="text-xs px-3 py-1 rounded font-bold bg-transparent text-slate-600 transition">⌨️ Teclado (Manual)</button>
+                    <button onclick="setModoIngreso('auto')" id="btnModoAuto" class="text-xs px-3 py-1.5 rounded-lg font-bold bg-blue-600 text-white transition">⚡ Pistola (Auto)</button>
+                    <button onclick="setModoIngreso('manual')" id="btnModoManual" class="text-xs px-3 py-1.5 rounded-lg font-bold bg-transparent text-slate-600 transition">⌨️ Teclado</button>
                 </div>
             </div>
 
-            <div id="instruccionSalida" class="bg-emerald-50 border border-emerald-200 p-3 rounded-lg text-xs text-emerald-900">
+            <div id="instruccionSalida" class="bg-blue-50 border border-blue-200 p-3.5 rounded-xl text-xs text-blue-900">
                 <p class="font-bold mb-1">📌 Instrucción (Modo Automático / Ráfaga):</p>
-                <p>Pase la pistola por el código de barras. El registro se enviará y limpiará de inmediato.</p>
+                <p>Pase la pistola por el código de barras. El registro se enviará y limpiará de inmediato al presionar Enter.</p>
             </div>
 
             <div class="max-w-md mx-auto pt-2 space-y-3">
                 <input type="text" id="codigoSalidaInput" placeholder="Escanee tarjeta saliente..." 
-                    oninput="procesarEntrada(this, 'salida')" autofocus
-                    class="w-full text-center uppercase tracking-widest font-mono text-lg border-2 border-slate-300 rounded-xl px-4 py-4 text-gray-800 focus:outline-none focus:border-[#691C32] shadow-inner bg-slate-50">
+                    onkeydown="manejarTeclado(event, 'salida')" autofocus
+                    class="w-full text-center uppercase tracking-widest font-mono text-xl border-2 border-slate-300 rounded-xl px-4 py-4 text-gray-800 focus:outline-none focus:border-blue-600 shadow-inner bg-slate-50">
                 
-                <button id="btnEnviarManual" onclick="enviarManualSalida()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 rounded-lg text-sm shadow transition hidden">
+                <button id="btnEnviarManual" onclick="enviarManualSalida()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-xl text-sm shadow transition hidden">
                     💾 Validar y Enviar Salida Manual
                 </button>
             </div>
         </div>
 
-        <!-- SECCIÓN 2: CANASTA -->
-        <div id="seccionCanastita" class="bg-white rounded-xl shadow-md p-6 border border-amber-400 space-y-4 hidden">
+        <!-- SECCIÓN 2: CARGA MASIVA (NUEVA PESTAÑA) -->
+        <div id="seccionMasiva" class="bg-white rounded-2xl shadow-md p-6 border border-slate-200 space-y-4 hidden">
+            <div class="space-y-1">
+                <h2 class="text-base font-extrabold text-slate-800 uppercase tracking-wide">📋 Carga Masiva de Folios / Tarjetas</h2>
+                <p class="text-xs text-slate-500">Pegue aquí su lista completa de números (separados por saltos de línea, comas o espacios). El sistema los separará y registrará automáticamente uno por uno en la base de oficina.</p>
+            </div>
+
+            <div class="space-y-3">
+                <textarea id="textareaMasivo" rows="6" placeholder="Pegue aquí su lista de folios..." 
+                    class="w-full uppercase font-mono text-xs border-2 border-slate-300 rounded-xl p-4 text-gray-800 focus:outline-none focus:border-blue-600 shadow-inner bg-slate-50"></textarea>
+                
+                <div class="flex justify-between items-center flex-wrap gap-2">
+                    <span id="lblEstadoMasivo" class="text-xs font-bold text-slate-600">Listo para procesar lote</span>
+                    <button onclick="procesarCargaMasiva()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl text-xs shadow transition">
+                        🚀 Procesar y Enviar Lote Masivo
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 3: CANASTA -->
+        <div id="seccionCanastita" class="bg-white rounded-2xl shadow-md p-6 border border-amber-400 space-y-4 hidden">
             <div class="text-center space-y-2">
-                <h2 class="text-sm font-bold text-amber-800 uppercase">Corte Fin de Día - Canasta (Devoluciones)</h2>
-                <div class="bg-amber-50 border border-amber-200 p-3 rounded-lg text-xs text-amber-900 text-left max-w-lg mx-auto">
+                <h2 class="text-base font-extrabold text-amber-800 uppercase tracking-wide">📥 Canasta Oficina (Devoluciones)</h2>
+                <div class="bg-amber-50 border border-amber-200 p-3.5 rounded-xl text-xs text-amber-900 text-left max-w-lg mx-auto">
                     <p class="font-bold mb-1">📌 Modo Canasta Activo:</p>
                     <p>Escanee la tarjeta no entregada. Se validarán sus datos antes de moverla a la bitácora de auditoría.</p>
                 </div>
             </div>
             <div class="max-w-md mx-auto pt-2">
                 <input type="text" id="codigoCanastitaInput" placeholder="Escanee tarjeta devuelta..." 
-                    oninput="procesarEntrada(this, 'canastita')"
-                    class="w-full text-center uppercase tracking-widest font-mono text-lg border-2 border-amber-400 rounded-xl px-4 py-4 text-gray-800 focus:outline-none focus:border-amber-600 shadow-inner bg-amber-50">
+                    onkeydown="manejarTeclado(event, 'canastita')"
+                    class="w-full text-center uppercase tracking-widest font-mono text-xl border-2 border-amber-400 rounded-xl px-4 py-4 text-gray-800 focus:outline-none focus:border-amber-600 shadow-inner bg-amber-50">
             </div>
         </div>
 
         <!-- NOTIFICACIONES -->
-        <div id="alertaExito" class="bg-emerald-50 border-l-8 border-emerald-600 rounded-xl p-4 shadow-md hidden flex items-center justify-between">
+        <div id="alertaExito" class="bg-emerald-50 border-l-8 border-emerald-600 rounded-2xl p-4 shadow-md hidden flex items-center justify-between">
             <div>
                 <span id="badgeExito" class="bg-emerald-200 text-emerald-900 text-[10px] font-bold px-2 py-0.5 rounded">REGISTRADO</span>
                 <p class="text-sm font-bold text-gray-900 mt-1"><span id="lblNombre"></span></p>
-                <p class="text-xs text-gray-600 font-mono">Folio: <span id="lblFolio"></span> | CCT: <span id="lblCct" class="text-[#691C32] font-bold"></span></p>
+                <p class="text-xs text-gray-600 font-mono">Folio: <span id="lblFolio"></span> | CCT: <span id="lblCct" class="text-blue-700 font-bold"></span></p>
             </div>
             <span id="lblHora" class="text-xs font-mono text-emerald-800 font-bold bg-white px-2 py-1 rounded shadow-sm"></span>
         </div>
 
-        <div id="alertaDuplicado" class="bg-amber-50 border-l-8 border-amber-500 rounded-xl p-4 shadow-md hidden text-center space-y-1">
+        <div id="alertaDuplicado" class="bg-amber-50 border-l-8 border-amber-500 rounded-2xl p-4 shadow-md hidden text-center space-y-1">
             <p class="font-bold text-sm text-amber-800">⚠️ Alerta de Sistema</p>
             <p id="lblDuplicadoMsg" class="text-xs font-semibold text-amber-700"></p>
         </div>
 
-        <div id="alertaError" class="bg-red-50 border-l-8 border-red-600 rounded-xl p-4 shadow-md hidden text-center space-y-1">
+        <div id="alertaError" class="bg-red-50 border-l-8 border-red-600 rounded-2xl p-4 shadow-md hidden text-center space-y-1">
             <p class="font-bold text-sm text-red-800">❌ Error</p>
             <p id="lblErrorMsg" class="text-xs font-semibold text-red-700"></p>
         </div>
 
         <!-- HISTORIAL -->
-        <div class="bg-white rounded-xl shadow-md p-6 border border-slate-200 space-y-3">
+        <div class="bg-white rounded-2xl shadow-md p-6 border border-slate-200 space-y-3">
             <div class="flex justify-between items-center">
-                <h3 id="tituloHistorial" class="text-sm font-bold text-gray-800">Historial de Salidas en esta Sesión</h3>
-                <span id="contadorSesion" class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded font-bold font-mono">0 procesadas</span>
+                <h3 id="tituloHistorial" class="text-sm font-extrabold text-slate-800 uppercase tracking-wider">Historial de Salidas en esta Sesión</h3>
+                <span id="contadorSesion" class="bg-slate-100 text-slate-700 text-xs px-3 py-1 rounded-lg font-bold font-mono">0 sincronizadas</span>
             </div>
             <div class="overflow-x-auto max-h-56">
                 <table class="w-full text-left text-xs divide-y divide-slate-100">
@@ -211,7 +220,7 @@
                     </thead>
                     <tbody id="tablaHistorial" class="divide-y divide-slate-100 text-slate-700">
                         <tr>
-                            <td colspan="4" class="p-4 text-center text-slate-400 italic">No hay registros en esta sesión todavía. Haga clic en Sincronizar Historial si recargó la página.</td>
+                            <td colspan="4" class="p-4 text-center text-slate-400 italic">No hay registros en esta sesión todavía. Haga clic en Sincronizar Historial.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -255,7 +264,7 @@
                     tbody.innerHTML = "";
                     totalSalidasNetas = 0;
                     
-                    if (result.registros.length === 0) {
+                    if (!result.registros || result.registros.length === 0) {
                         tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 italic">No hay registros de salidas para hoy todavía.</td></tr>`;
                     } else {
                         result.registros.forEach(reg => {
@@ -266,7 +275,7 @@
                                 <td class="p-2 font-mono text-slate-500">${reg.hora}</td>
                                 <td class="p-2 font-mono font-bold">${reg.folio}</td>
                                 <td class="p-2 font-semibold text-gray-900">${reg.nombre} <span class="text-emerald-700 font-bold">SALIDA</span></td>
-                                <td class="p-2 font-mono text-[#691C32] font-bold">${reg.cct}</td>
+                                <td class="p-2 font-mono text-blue-700 font-bold">${reg.cct}</td>
                             `;
                             tbody.prepend(tr);
                         });
@@ -295,22 +304,33 @@
         function cambiarSeccion(seccion) {
             seccionActual = seccion;
             const sSalidas = document.getElementById('seccionSalidas');
+            const sMasiva = document.getElementById('seccionMasiva');
             const sCanastita = document.getElementById('seccionCanastita');
+            
             const tSalidas = document.getElementById('tabSalidas');
+            const tMasiva = document.getElementById('tabMasiva');
             const tCanastita = document.getElementById('tabCanastita');
             const titHistorial = document.getElementById('tituloHistorial');
 
+            tSalidas.className = "py-3.5 px-4 rounded-xl text-sm font-extrabold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center flex items-center justify-center space-x-2";
+            tMasiva.className = "py-3.5 px-4 rounded-xl text-sm font-extrabold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center flex items-center justify-center space-x-2";
+            tCanastita.className = "py-3.5 px-4 rounded-xl text-sm font-extrabold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center flex items-center justify-center space-x-2";
+
+            sSalidas.classList.add('hidden');
+            sMasiva.classList.add('hidden');
+            sCanastita.classList.add('hidden');
+
             if (seccion === 'salidas') {
                 sSalidas.classList.remove('hidden');
-                sCanastita.classList.add('hidden');
-                tSalidas.className = "py-2.5 rounded-lg text-sm font-bold bg-[#691C32] text-white shadow transition text-center";
-                tCanastita.className = "py-2.5 rounded-lg text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center";
+                tSalidas.className = "py-3.5 px-4 rounded-xl text-sm font-extrabold bg-blue-600 text-white shadow-md transition text-center flex items-center justify-center space-x-2";
                 titHistorial.textContent = "Historial de Salidas en esta Sesión";
+            } else if (seccion === 'masiva') {
+                sMasiva.classList.remove('hidden');
+                tMasiva.className = "py-3.5 px-4 rounded-xl text-sm font-extrabold bg-blue-600 text-white shadow-md transition text-center flex items-center justify-center space-x-2";
+                titHistorial.textContent = "Historial de Lotes Procesados";
             } else {
-                sSalidas.classList.add('hidden');
                 sCanastita.classList.remove('hidden');
-                tCanastita.className = "py-2.5 rounded-lg text-sm font-bold bg-amber-600 text-white shadow transition text-center";
-                tSalidas.className = "py-2.5 rounded-lg text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center";
+                tCanastita.className = "py-3.5 px-4 rounded-xl text-sm font-extrabold bg-amber-600 text-white shadow-md transition text-center flex items-center justify-center space-x-2";
                 titHistorial.textContent = "Historial de Canasta (Tarjetas Enviadas a Auditoría)";
             }
             mantenerFoco();
@@ -326,47 +346,115 @@
 
             input.value = "";
             if (modo === 'auto') {
-                btnAuto.className = "text-xs px-3 py-1 rounded font-bold bg-[#691C32] text-white transition";
-                btnManual.className = "text-xs px-3 py-1 rounded font-bold bg-transparent text-slate-600 transition";
+                btnAuto.className = "text-xs px-3 py-1.5 rounded-lg font-bold bg-blue-600 text-white transition";
+                btnManual.className = "text-xs px-3 py-1.5 rounded-lg font-bold bg-transparent text-slate-600 transition";
                 btnEnviar.classList.add('hidden');
-                instruccion.innerHTML = `<p class="font-bold mb-1">📌 Instrucción (Modo Automático / Ráfaga):</p><p>Pase la pistola por el código de barras. El registro se enviará y limpiará de inmediato.</p>`;
+                instruccion.innerHTML = `<p class="font-bold mb-1">📌 Instrucción (Modo Automático / Ráfaga):</p><p>Pase la pistola por el código de barras. El registro se enviará y limpiará de inmediato al presionar Enter.</p>`;
             } else {
-                btnManual.className = "text-xs px-3 py-1 rounded font-bold bg-amber-600 text-white transition";
-                btnAuto.className = "text-xs px-3 py-1 rounded font-bold bg-transparent text-slate-600 transition";
+                btnManual.className = "text-xs px-3 py-1.5 rounded-lg font-bold bg-amber-600 text-white transition";
+                btnAuto.className = "text-xs px-3 py-1.5 rounded-lg font-bold bg-transparent text-slate-600 transition";
                 btnEnviar.classList.remove('hidden');
-                instruccion.innerHTML = `<p class="font-bold mb-1">📌 Instrucción (Modo Teclado / Manual):</p><p>Escriba o corrija los 16 dígitos con calma y dé clic en el botón verde para enviar.</p>`;
+                instruccion.innerHTML = `<p class="font-bold mb-1">📌 Instrucción (Modo Teclado / Manual):</p><p>Escriba o corrija los dígitos con calma y dé clic en el botón verde para enviar.</p>`;
             }
             input.focus();
         }
 
         function mantenerFoco() {
-            if (modoIngreso === 'manual' && seccionActual === 'salidas') return;
+            if (seccionActual !== 'salidas') return;
+            if (modoIngreso === 'manual') return;
             if (!document.getElementById("modalConfirmarBorrado").classList.contains("hidden")) return;
             
-            const input = seccionActual === 'salidas' ? document.getElementById("codigoSalidaInput") : document.getElementById("codigoCanastitaInput");
+            const input = document.getElementById("codigoSalidaInput");
             if (document.activeElement !== input) {
                 input.focus();
             }
         }
-        setInterval(() => { if (modoIngreso === 'auto' || seccionActual === 'canastita') mantenerFoco(); }, 1000);
+        setInterval(() => { if (seccionActual === 'salidas' && modoIngreso === 'auto') mantenerFoco(); }, 1000);
 
-        function procesarEntrada(input, tipo) {
+        function manejarTeclado(event, tipo) {
             if (procesando) return;
-            let codigo = input.value.trim();
             
-            if (tipo === 'salida' && modoIngreso === 'auto' && codigo.length >= 16) {
-                procesando = true;
-                enviarServidor(codigo, tipo);
-            } else if (tipo === 'canastita' && codigo.length >= 16) {
-                procesando = true;
-                consultarParaCanastita(codigo);
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                let input = tipo === 'salida' ? document.getElementById("codigoSalidaInput") : document.getElementById("codigoCanastitaInput");
+                let codigo = input.value.trim().toUpperCase();
+                
+                if (codigo.length > 5) {
+                    procesando = true;
+                    if (tipo === 'salida') {
+                        enviarServidor(codigo, 'salida');
+                    } else {
+                        consultarParaCanastita(codigo);
+                    }
+                }
             }
+        }
+
+        async function procesarCargaMasiva() {
+            const textarea = document.getElementById('textareaMasivo');
+            const lblEstado = document.getElementById('lblEstadoMasivo');
+            let texto = textarea.value.trim();
+
+            if (!texto) {
+                alert("Por favor pegue una lista de folios.");
+                return;
+            }
+
+            let folios = textToFoliosArray(texto);
+            
+            if (folios.length === 0) {
+                alert("No se detectaron folios válidos.");
+                return;
+            }
+
+            lblEstado.textContent = `Procesando 0 / ${folios.length}...`;
+            let procesados = 0;
+            let errores = 0;
+
+            for (let i = 0; i < folios.length; i++) {
+                let folio = folios[i];
+                lblEstado.textContent = `Enviando (${i + 1} de ${folios.length}): ${folio}`;
+
+                try {
+                    const response = await fetch(API_URL, {
+                        method: "POST",
+                        body: JSON.stringify({ 
+                            action: "registrarSalida", 
+                            codigo: folio, 
+                            usuario: `${usuarioActual} (${usuarioFolio})` 
+                        })
+                    });
+                    const result = await response.json();
+
+                    if (result.status === "success" || result.status === "duplicado") {
+                        if (result.status === "success") {
+                            actualizarContadores('salida');
+                            agregarAlHistorial(result, folio, 'salida');
+                        }
+                        procesados++;
+                    } else {
+                        errores++;
+                    }
+                } catch (err) {
+                    errores++;
+                }
+                await new Promise(r => setTimeout(r, 150));
+            }
+
+            lblEstado.textContent = `✅ Lote finalizado. Exitosos/Duplicados: ${procesados}, Errores: ${errores}`;
+            textarea.value = "";
+        }
+
+        function textToFoliosArray(text) {
+            return text.split(/[\s,;\n\r]+/)
+                       .map(f => f.trim().toUpperCase())
+                       .filter(f => f.length > 5);
         }
 
         function enviarManualSalida() {
             const input = document.getElementById("codigoSalidaInput");
-            let codigo = input.value.trim();
-            if (codigo.length < 10) {
+            let codigo = input.value.trim().toUpperCase();
+            if (codigo.length < 5) {
                 mostrarError("Ingrese un código de tarjeta válido.");
                 return;
             }
@@ -421,7 +509,7 @@
 
         async function ejecutarBorradoCanastita() {
             document.getElementById("modalConfirmarBorrado").classList.add("hidden");
-
+            
             try {
                 const response = await fetch(API_URL, {
                     method: "POST",
@@ -549,7 +637,7 @@
                 <td class="p-2 font-mono text-slate-500">${res.hora}</td>
                 <td class="p-2 font-mono font-bold">${folio}</td>
                 <td class="p-2 font-semibold text-gray-900">${res.nombre} ${badgeAccion}</td>
-                <td class="p-2 font-mono text-[#691C32] font-bold">${res.cct}</td>
+                <td class="p-2 font-mono text-blue-700 font-bold">${res.cct}</td>
             `;
             tbody.prepend(tr);
         }
