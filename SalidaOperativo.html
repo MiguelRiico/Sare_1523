@@ -69,13 +69,16 @@
             </div>
         </div>
 
-        <!-- Selector de Pestañas -->
-        <div class="bg-white rounded-xl shadow-md p-2 border-t-4 border-gob-primary grid grid-cols-2 gap-2">
+        <!-- Selector de Pestañas (3 Opciones: Salidas, Carga Masiva y Canasta) -->
+        <div class="bg-white rounded-xl shadow-md p-2 border-t-4 border-gob-primary grid grid-cols-3 gap-2">
             <button onclick="cambiarSeccion('salidas')" id="tabSalidas" class="py-2.5 rounded-lg text-sm font-bold bg-[#691C32] text-white shadow transition text-center">
-                📦 1. Salidas Operativo
+                📦 1. Salidas
+            </button>
+            <button onclick="cambiarSeccion('masiva')" id="tabMasiva" class="py-2.5 rounded-lg text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center">
+                📋 2. Carga Masiva
             </button>
             <button onclick="intentarAbrirCanastita()" id="tabCanastita" class="py-2.5 rounded-lg text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center">
-                📥 2. Canasta (Devoluciones)
+                📥 3. Canasta
             </button>
         </div>
 
@@ -130,7 +133,7 @@
             </div>
         </div>
 
-        <!-- SECCIÓN 1: SALIDAS -->
+        <!-- SECCIÓN 1: SALIDAS (PISTOLA RÁFAGA) -->
         <div id="seccionSalidas" class="bg-white rounded-xl shadow-md p-6 border border-slate-200 space-y-4">
             <div class="flex justify-between items-center flex-wrap gap-2">
                 <h2 class="text-sm font-bold text-gray-700 uppercase">Módulo de Salidas Operativo</h2>
@@ -157,7 +160,27 @@
             </div>
         </div>
 
-        <!-- SECCIÓN 2: CANASTA -->
+        <!-- SECCIÓN 2: CARGA MASIVA (NUEVA PESTAÑA) -->
+        <div id="seccionMasiva" class="bg-white rounded-xl shadow-md p-6 border border-slate-200 space-y-4 hidden">
+            <div class="space-y-1">
+                <h2 class="text-sm font-bold text-gray-700 uppercase">Carga Masiva de Folios</h2>
+                <p class="text-xs text-gray-500">Pegue aquí su lista de números (pueden estar separados por saltos de línea, comas o espacios). El sistema los separará y registrará automáticamente uno por uno.</p>
+            </div>
+
+            <div class="space-y-3">
+                <textarea id="textareaMasivo" rows="6" placeholder="Pegue aquí su lista de folios..." 
+                    class="w-full uppercase font-mono text-xs border-2 border-slate-300 rounded-xl p-3 text-gray-800 focus:outline-none focus:border-[#691C32] shadow-inner bg-slate-50"></textarea>
+                
+                <div class="flex justify-between items-center">
+                    <span id="lblEstadoMasivo" class="text-xs font-bold text-slate-600">Listo para procesar</span>
+                    <button onclick="procesarCargaMasiva()" class="bg-[#691C32] hover:bg-[#5b1328] text-white font-bold py-2.5 px-6 rounded-xl text-xs shadow transition">
+                        🚀 Procesar y Enviar Lote
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 3: CANASTA -->
         <div id="seccionCanastita" class="bg-white rounded-xl shadow-md p-6 border border-amber-400 space-y-4 hidden">
             <div class="text-center space-y-2">
                 <h2 class="text-sm font-bold text-amber-800 uppercase">Canasta Operativo (Devoluciones)</h2>
@@ -295,22 +318,34 @@
         function cambiarSeccion(seccion) {
             seccionActual = seccion;
             const sSalidas = document.getElementById('seccionSalidas');
+            const sMasiva = document.getElementById('seccionMasiva');
             const sCanastita = document.getElementById('seccionCanastita');
+            
             const tSalidas = document.getElementById('tabSalidas');
+            const tMasiva = document.getElementById('tabMasiva');
             const tCanastita = document.getElementById('tabCanastita');
             const titHistorial = document.getElementById('tituloHistorial');
 
+            // Reset de estilos de pestañas
+            tSalidas.className = "py-2.5 rounded-lg text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center";
+            tMasiva.className = "py-2.5 rounded-lg text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center";
+            tCanastita.className = "py-2.5 rounded-lg text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center";
+
+            sSalidas.classList.add('hidden');
+            sMasiva.classList.add('hidden');
+            sCanastita.classList.add('hidden');
+
             if (seccion === 'salidas') {
                 sSalidas.classList.remove('hidden');
-                sCanastita.classList.add('hidden');
                 tSalidas.className = "py-2.5 rounded-lg text-sm font-bold bg-[#691C32] text-white shadow transition text-center";
-                tCanastita.className = "py-2.5 rounded-lg text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center";
                 titHistorial.textContent = "Historial de Salidas en esta Sesión";
+            } else if (seccion === 'masiva') {
+                sMasiva.classList.remove('hidden');
+                tMasiva.className = "py-2.5 rounded-lg text-sm font-bold bg-[#691C32] text-white shadow transition text-center";
+                titHistorial.textContent = "Historial de Lotes Procesados";
             } else {
-                sSalidas.classList.add('hidden');
                 sCanastita.classList.remove('hidden');
                 tCanastita.className = "py-2.5 rounded-lg text-sm font-bold bg-amber-600 text-white shadow transition text-center";
-                tSalidas.className = "py-2.5 rounded-lg text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center";
                 titHistorial.textContent = "Historial de Canasta (Tarjetas Enviadas a Auditoría)";
             }
             mantenerFoco();
@@ -340,17 +375,18 @@
         }
 
         function mantenerFoco() {
-            if (modoIngreso === 'manual' && seccionActual === 'salidas') return;
+            if (seccionActual !== 'salidas') return;
+            if (modoIngreso === 'manual') return;
             if (!document.getElementById("modalConfirmarBorrado").classList.contains("hidden")) return;
             
-            const input = seccionActual === 'salidas' ? document.getElementById("codigoSalidaInput") : document.getElementById("codigoCanastitaInput");
+            const input = document.getElementById("codigoSalidaInput");
             if (document.activeElement !== input) {
                 input.focus();
             }
         }
-        setInterval(() => { if (modoIngreso === 'auto' || seccionActual === 'canastita') mantenerFoco(); }, 1000);
+        setInterval(() => { if (seccionActual === 'salidas' && modoIngreso === 'auto') mantenerFoco(); }, 1000);
 
-        // NUEVO MANEJADOR DE TECLADO / PISTOLA (ESPERA EL ENTER O FIN DE RÁFAGA)
+        // MANEJADOR DE PISTOLA EN RÁFAGA (ESPERA EL ENTER)
         function manejarTeclado(event, tipo) {
             if (procesando) return;
             
@@ -368,6 +404,71 @@
                     }
                 }
             }
+        }
+
+        // PROCESADOR DE CARGA MASIVA (SEPARA AUTOMÁTICAMENTE Y ENVÍA EN BUCLE)
+        async function procesarCargaMasiva() {
+            const textarea = document.getElementById('textareaMasivo');
+            const lblEstado = document.getElementById('lblEstadoMasivo');
+            let texto = textarea.value.trim();
+
+            if (!texto) {
+                alert("Por favor pegue una lista de folios.");
+                return;
+            }
+
+            // Separa por saltos de línea, comas o espacios múltiples
+            let folios = textToFoliosArray(texto);
+            
+            if (folios.length === 0) {
+                alert("No se detectaron folios válidos.");
+                return;
+            }
+
+            lblEstado.textContent = `Procesando 0 / ${folios.length}...`;
+            let procesados = 0;
+            let errores = 0;
+
+            for (let i = 0; i < folios.length; i++) {
+                let folio = folios[i];
+                lblEstado.textContent = `Enviando (${i + 1} de ${folios.length}): ${folio}`;
+
+                try {
+                    const response = await fetch(API_URL, {
+                        method: "POST",
+                        body: JSON.stringify({ 
+                            action: "registrarSalida", 
+                            codigo: folio, 
+                            usuario: `${usuarioActual} (${usuarioFolio})` 
+                        })
+                    });
+                    const result = await response.json();
+
+                    if (result.status === "success" || result.status === "duplicado") {
+                        if (result.status === "success") {
+                            actualizarContadores('salida');
+                            agregarAlHistorial(result, folio, 'salida');
+                        }
+                        procesados++;
+                    } else {
+                        errores++;
+                    }
+                } catch (err) {
+                    errores++;
+                }
+                // Pequeña pausa para no saturar el servidor
+                await new Promise(r => setTimeout(r, 150));
+            }
+
+            lblEstado.textContent = `✅ Lote finalizado. Exitosos/Duplicados: ${procesados}, Errores: ${errores}`;
+            textarea.value = "";
+        }
+
+        function textToFoliosArray(text) {
+            // Reemplaza comas, espacios, tabuladores y saltos por un delimitador común y filtra vacíos
+            return text.split(/[\s,;\n\r]+/)
+                       .map(f => f.trim().toUpperCase())
+                       .filter(f => f.length > 5);
         }
 
         function enviarManualSalida() {
