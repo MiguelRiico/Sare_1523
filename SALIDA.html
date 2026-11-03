@@ -146,7 +146,7 @@
             </div>
         </div>
 
-        <!-- SECCIÓN 2: CARGA MASIVA (NUEVA PESTAÑA) -->
+        <!-- SECCIÓN 2: CARGA MASIVA -->
         <div id="seccionMasiva" class="bg-white rounded-2xl shadow-md p-6 border border-slate-200 space-y-4 hidden">
             <div class="space-y-1">
                 <h2 class="text-base font-extrabold text-slate-800 uppercase tracking-wide">📋 Carga Masiva de Folios / Tarjetas</h2>
@@ -220,7 +220,7 @@
                     </thead>
                     <tbody id="tablaHistorial" class="divide-y divide-slate-100 text-slate-700">
                         <tr>
-                            <td colspan="4" class="p-4 text-center text-slate-400 italic">No hay registros en esta sesión todavía. Haga clic en Sincronizar Historial.</td>
+                            <td colspan="4" class="p-4 text-center text-slate-400 italic">Cargando registros del día...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -248,7 +248,7 @@
 
         window.addEventListener("DOMContentLoaded", () => {
             document.getElementById("infoOperadorHeader").textContent = `Operador: ${usuarioActual} (Folio: ${usuarioFolio})`;
-            sincronizarHistorialDia();
+            sincronizarHistorialDia(); // Sincroniza automáticamente al abrir la página
         });
 
         async function sincronizarHistorialDia() {
@@ -626,7 +626,7 @@
 
         function agregarAlHistorial(res, folio, tipo) {
             const tbody = document.getElementById('tablaHistorial');
-            if (tbody.innerHTML.includes("No hay registros")) tbody.innerHTML = "";
+            if (tbody.innerHTML.includes("No hay registros") || tbody.innerHTML.includes("Cargando registros")) tbody.innerHTML = "";
 
             const tr = document.createElement('tr');
             tr.className = "hover:bg-slate-50";
