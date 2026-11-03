@@ -143,12 +143,12 @@
 
             <div id="instruccionSalida" class="bg-emerald-50 border border-emerald-200 p-3 rounded-lg text-xs text-emerald-900">
                 <p class="font-bold mb-1">📌 Instrucción (Modo Automático / Ráfaga):</p>
-                <p>Pase la pistola por el código del folio. El registro se enviará y limpiará de inmediato.</p>
+                <p>Pase la pistola por el código del folio. El registro se enviará automáticamente al completarse la lectura.</p>
             </div>
 
             <div class="max-w-md mx-auto pt-2 space-y-3">
                 <input type="text" id="codigoSalidaInput" placeholder="Escanee folio saliente..." 
-                    oninput="procesarEntrada(this, 'salida')" autofocus
+                    onkeydown="manejarTeclado(event, 'salida')" autofocus
                     class="w-full text-center uppercase tracking-widest font-mono text-lg border-2 border-slate-300 rounded-xl px-4 py-4 text-gray-800 focus:outline-none focus:border-[#691C32] shadow-inner bg-slate-50">
                 
                 <button id="btnEnviarManual" onclick="enviarManualSalida()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 rounded-lg text-sm shadow transition hidden">
@@ -168,7 +168,7 @@
             </div>
             <div class="max-w-md mx-auto pt-2">
                 <input type="text" id="codigoCanastitaInput" placeholder="Escanee folio devuelto..." 
-                    oninput="procesarEntrada(this, 'canastita')"
+                    onkeydown="manejarTeclado(event, 'canastita')"
                     class="w-full text-center uppercase tracking-widest font-mono text-lg border-2 border-amber-400 rounded-xl px-4 py-4 text-gray-800 focus:outline-none focus:border-amber-600 shadow-inner bg-amber-50">
             </div>
         </div>
@@ -329,7 +329,7 @@
                 btnAuto.className = "text-xs px-3 py-1 rounded font-bold bg-[#691C32] text-white transition";
                 btnManual.className = "text-xs px-3 py-1 rounded font-bold bg-transparent text-slate-600 transition";
                 btnEnviar.classList.add('hidden');
-                instruccion.innerHTML = `<p class="font-bold mb-1">📌 Instrucción (Modo Automático / Ráfaga):</p><p>Pase la pistola por el código del folio. El registro se enviará y limpiará de inmediato.</p>`;
+                instruccion.innerHTML = `<p class="font-bold mb-1">📌 Instrucción (Modo Automático / Ráfaga):</p><p>Pase la pistola por el código del folio. El registro se enviará automáticamente al completarse la lectura.</p>`;
             } else {
                 btnManual.className = "text-xs px-3 py-1 rounded font-bold bg-amber-600 text-white transition";
                 btnAuto.className = "text-xs px-3 py-1 rounded font-bold bg-transparent text-slate-600 transition";
@@ -350,22 +350,29 @@
         }
         setInterval(() => { if (modoIngreso === 'auto' || seccionActual === 'canastita') mantenerFoco(); }, 1000);
 
-        function procesarEntrada(input, tipo) {
+        // NUEVO MANEJADOR DE TECLADO / PISTOLA (ESPERA EL ENTER O FIN DE RÁFAGA)
+        function manejarTeclado(event, tipo) {
             if (procesando) return;
-            let codigo = input.value.trim();
             
-            if (tipo === 'salida' && modoIngreso === 'auto' && codigo.length >= 10) {
-                procesando = true;
-                enviarServidor(codigo, tipo);
-            } else if (tipo === 'canastita' && codigo.length >= 10) {
-                procesando = true;
-                consultarParaCanastita(codigo);
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                let input = tipo === 'salida' ? document.getElementById("codigoSalidaInput") : document.getElementById("codigoCanastitaInput");
+                let codigo = input.value.trim().toUpperCase();
+                
+                if (codigo.length > 5) {
+                    procesando = true;
+                    if (tipo === 'salida') {
+                        enviarServidor(codigo, 'salida');
+                    } else {
+                        consultarParaCanastita(codigo);
+                    }
+                }
             }
         }
 
         function enviarManualSalida() {
             const input = document.getElementById("codigoSalidaInput");
-            let codigo = input.value.trim();
+            let codigo = input.value.trim().toUpperCase();
             if (codigo.length < 5) {
                 mostrarError("Ingrese un código de folio válido.");
                 return;
