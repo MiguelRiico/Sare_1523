@@ -174,7 +174,7 @@
             }
         }
 
-        // Bucle de escaneo con extractor estricto de 18 dígitos del CURP
+        // Bucle de escaneo optimizado
         function escanearFrame() {
             if (!scanActivo) return;
             const video = document.getElementById("video-camara");
@@ -189,12 +189,12 @@
                 const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
 
                 if (code) {
-                    let textoCrudo = code.data.trim().toUpperCase();
+                    let textoCrudo = code.data.trim();
                     let curpExtraido = extraerCurpDeTexto(textoCrudo);
 
                     if (curpExtraido) {
                         document.getElementById("txtCurpInput").value = curpExtraido;
-                        toggleCamara(); // Apagar cámara al capturar
+                        toggleCamara(); // Apagar cámara al capturar con éxito
                         consultarCurpBackend(curpExtraido);
                         return;
                     }
@@ -203,30 +203,36 @@
             requestAnimationFrame(escanearFrame);
         }
 
-        // Función blindada para recortar exactamente los 18 dígitos del CURP
+        // Extractor altamente flexible: Extrae los primeros 18 caracteres limpios alfanuméricos
         function extraerCurpDeTexto(texto) {
-            let limpio = texto.replace(/^[\|\s]+/, '');
-            const regexCurp = /[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[0-9A-Z][0-9]/;
-            const coincidencia = limpio.match(regexCurp);
+            if (!texto) return null;
+            // Limpiar espacios y caracteres especiales de separación
+            let limpio = texto.replace(/[\r\n\t]/g, '').trim();
             
-            if (coincidencia) {
-                return coincidencia[0];
-            }
-            if (limpio.length >= 18) {
-                let posibleCurp = limpio.substring(0, 18);
-                if (/^[A-Z0-9]{18}$/.test(posibleCurp)) {
-                    return posibleCurp;
+            // Si el texto trae barras o separadores (ej: NAMU...||NA...), cortamos en el primer separador o tomamos los primeros 18 caracteres válidos
+            let partes = limpio.split(/[\|\/\-\+\,\;\:]+/);
+            for (let parte of partes) {
+                let pLimpia = parte.replace(/[^A-Z0-9]/gi, '').toUpperCase();
+                if (pLimpia.length >= 18) {
+                    return pLimpia.substring(0, 18);
                 }
             }
+            
+            // Respaldo directo si la cadena limpia tiene al menos 18 caracteres
+            let generalLimpio = limpio.replace(/[^A-Z0-9]/gi, '').toUpperCase();
+            if (generalLimpio.length >= 18) {
+                return generalLimpio.substring(0, 18);
+            }
+            
             return null;
         }
 
         function ejecutarBusquedaManual() {
-            let textoIngresado = document.getElementById("txtCurpInput").value.trim().toUpperCase();
+            let textoIngresado = document.getElementById("txtCurpInput").value.trim();
             let curpLimpio = extraerCurpDeTexto(textoIngresado);
             
             if (!curpLimpio || curpLimpio.length !== 18) {
-                alert("El CURP no es válido o no contiene 18 caracteres. Verifique el texto ingresado.");
+                alert("El CURP no contiene 18 caracteres válidos. Verifique el texto.");
                 return;
             }
             
@@ -238,9 +244,7 @@
             const urlWebApps = "https://script.google.com/macros/s/AKfycbz_velz5uz1PdR-GmuZib6IREp2rZJLEBDuhK3jMfLoZ5uFX6vanY5COK87BWwkyZlw/exec?action=buscarCurp&curp=" + encodeURIComponent(curp) + "&usuario=" + encodeURIComponent(usuarioActual);
 
             document.getElementById("panelResultado").classList.remove("hidden");
-            
-            // Aquí puedes conectar el fetch real a tu Apps Script cuando lo desees
-            console.log("Consultando CURP limpio: " + curp);
+            console.log("CURP escaneado correctamente y listo para consultar: " + curp);
         }
 
         function validarEdad(esMayor) {
