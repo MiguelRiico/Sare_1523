@@ -1,4 +1,148 @@
-<script>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operativo SIBUEMS - SARE 1523</title>
+    <!-- Tailwind CSS para diseño limpio, responsivo y de alto contraste -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Librería jsQR para lectura de códigos con la cámara del celular -->
+    <script src="https://cdn.jsdelivr.net/npm/jsQR@1.4.0/dist/jsQR.js"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+
+    <!-- Header con indicador de operador y retorno -->
+    <header class="bg-slate-800 border-b border-slate-700 px-4 py-3 flex flex-wrap justify-between items-center shadow-md">
+        <div class="flex items-center space-x-3">
+            <span class="bg-emerald-600 text-white text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">SIBUEMS</span>
+            <h1 class="text-lg font-bold tracking-wide">Módulo Operativo en Campo</h1>
+        </div>
+        <div class="flex items-center space-x-3 mt-2 sm:mt-0">
+            <span id="lblOperador" class="text-sm text-slate-400">Operador: <strong class="text-emerald-400">Cargando...</strong></span>
+            <a href="index.html" class="bg-slate-700 hover:bg-slate-600 text-xs px-3 py-1.5 rounded transition text-slate-200 font-medium">🏠 Menú Principal</a>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="flex-1 max-w-4xl w-full mx-auto p-4 flex flex-col gap-6">
+
+        <!-- Sección de Escaneo por Cámara y Entrada Manual -->
+        <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg">
+            <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">Lectura de Credencial / CURP (Extracción QR Automática)</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                <!-- Visor de Cámara -->
+                <div class="flex flex-col items-center bg-slate-900 rounded-lg p-3 border border-slate-700">
+                    <div id="contenedor-camara" class="relative w-full h-48 bg-black rounded overflow-hidden flex items-center justify-center">
+                        <video id="video-camara" class="absolute inset-0 w-full h-full object-cover" muted playsinline></video>
+                        <canvas id="canvas-camara" class="hidden"></canvas>
+                        <div id="overlay-camara" class="absolute inset-0 border-2 border-emerald-500/50 rounded pointer-events-none flex items-center justify-center">
+                            <span class="bg-black/60 text-emerald-400 text-xs px-2 py-1 rounded">Apunta al QR / Código</span>
+                        </div>
+                    </div>
+                    <button id="btnToggleCamara" onclick="toggleCamara()" class="mt-3 w-full bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold py-2 px-4 rounded transition shadow">
+                        📷 Activar / Usar Cámara
+                    </button>
+                </div>
+
+                <!-- Captura Manual y Acciones de Respaldo -->
+                <div class="flex flex-col justify-between h-full space-y-3">
+                    <div>
+                        <label for="txtCurpInput" class="block text-xs font-medium text-slate-400 mb-1">CURP (18 Dígitos):</label>
+                        <div class="flex space-x-2">
+                            <input type="text" id="txtCurpInput" maxlength="18" placeholder="Escanee o ingrese CURP..." class="flex-1 bg-slate-900 border border-slate-700 rounded px-3 py-2 text-white uppercase font-mono tracking-wider focus:outline-none focus:border-emerald-500">
+                            <button onclick="ejecutarBusquedaManual()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded font-semibold transition text-sm">Buscar</button>
+                        </div>
+                    </div>
+
+                    <!-- Botones de Control Especial (17-30 SEP y Convocatoria Anterior) -->
+                    <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-700 space-y-2">
+                        <span class="block text-xs font-semibold text-slate-400 uppercase">Botones de Control de Registro:</span>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="alertaBoton17_30()" class="bg-amber-600 hover:bg-amber-500 text-white text-xs py-2 px-2 rounded font-medium transition text-center">
+                                📅 17-30 SEP
+                            </button>
+                            <button onclick="alertaConvocatoriaAnterior()" class="bg-purple-600 hover:bg-purple-500 text-white text-xs py-2 px-2 rounded font-medium transition text-center">
+                                📂 Convocatoria Anterior
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta de Resultados de la Búsqueda -->
+        <div id="panelResultado" class="hidden bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-4">
+            <div class="flex justify-between items-start border-b border-slate-700 pb-3">
+                <div>
+                    <span id="badgeEstatus" class="inline-block px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wider mb-1">Estatus</span>
+                    <h3 id="resNombre" class="text-xl font-bold text-white uppercase">NOMBRE DEL BECARIO</h3>
+                </div>
+                <div class="text-right">
+                    <span class="text-xs text-slate-400 block">Folio:</span>
+                    <span id="resFolio" class="font-mono text-emerald-400 font-semibold">---</span>
+                </div>
+            </div>
+
+            <!-- Datos Generales -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                <div class="bg-slate-900 p-2.5 rounded border border-slate-700/60">
+                    <span class="text-xs text-slate-400 block">CURP:</span>
+                    <span id="resCurp" class="font-mono font-medium text-slate-200 text-xs">---</span>
+                </div>
+                <div class="bg-slate-900 p-2.5 rounded border border-slate-700/60">
+                    <span class="text-xs text-slate-400 block">CCT:</span>
+                    <span id="resCct" class="font-mono font-medium text-slate-200">---</span>
+                </div>
+                <div class="bg-slate-900 p-2.5 rounded border border-slate-700/60">
+                    <span class="text-xs text-slate-400 block">Municipio:</span>
+                    <span id="resMunicipio" class="font-medium text-slate-200">---</span>
+                </div>
+                <div class="bg-slate-900 p-2.5 rounded border border-slate-700/60">
+                    <span class="text-xs text-slate-400 block">Programa:</span>
+                    <span id="resPrograma" class="font-medium text-slate-200">SIBUEMS</span>
+                </div>
+            </div>
+
+            <!-- Validación de Fecha de Entrega y Sede -->
+            <div id="contenedorAlertaFecha" class="p-3 rounded-lg border text-sm">
+                <!-- Se llena dinámicamente -->
+            </div>
+
+            <!-- Sección de Validación de Menor de 15 Años -->
+            <div class="bg-slate-900 p-3 rounded-lg border border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <span class="text-xs text-slate-300">¿El alumno cuenta con 15 años cumplidos?</span>
+                <div class="flex space-x-2">
+                    <button onclick="validarEdad(true)" class="bg-emerald-600 hover:bg-emerald-500 text-xs px-3 py-1.5 rounded font-medium text-white">Sí (15+ años)</button>
+                    <button onclick="validarEdad(false)" class="bg-rose-600 hover:bg-rose-500 text-xs px-3 py-1.5 rounded font-medium text-white">No (&lt; 15 años)</button>
+                </div>
+            </div>
+            <div id="alertaMenorEdad" class="hidden bg-rose-950/60 border border-rose-800 text-rose-200 p-3 rounded-lg text-xs leading-relaxed">
+                <strong>⚠️ Aviso Legal / Bancario:</strong> No se le puede entregar una tarjeta bancaria a un menor de 15 años debido a restricciones normativas de las instituciones financieras.
+            </div>
+
+            <!-- 🔄 BOTONES DE ACCESO A OTROS UNIVERSOS (Ocultos por defecto, solo aparecen si da NO ENCONTRADO) -->
+            <div id="contenedorOtrosUniversos" class="hidden bg-slate-900/90 p-4 rounded-xl border border-rose-500/50 space-y-3">
+                <div class="flex items-center space-x-2 text-rose-400 text-xs font-bold uppercase">
+                    <span>⚠️</span>
+                    <span>El CURP no está en SIBUEMS Principal. Buscar en otros universos:</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <a id="btnLinkRechazo" href="NominalRechazo.html" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-2 rounded font-semibold text-center transition shadow">
+                        🔄 Buscar en Nominal Rechazos (Por CURP)
+                    </a>
+                    <a href="FiltroSare.html" class="bg-amber-600 hover:bg-amber-500 text-white text-xs px-3 py-2 rounded font-semibold text-center transition shadow">
+                        📁 Buscar en Rezago Oficina (Por Nombre)
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Scripts de Operación -->
+    <script>
         const usuarioActual = localStorage.getItem("sare_user") || "OPERADOR_CAMPO";
         document.getElementById("lblOperador").innerHTML = `Operador: <strong class="text-emerald-400">${usuarioActual}</strong>`;
 
@@ -30,7 +174,7 @@
             }
         }
 
-        // Bucle de escaneo con EXTRACTOR AUTOMÁTICO DE 18 DÍGITOS (CURP)
+        // Bucle de escaneo con extractor estricto de 18 dígitos del CURP
         function escanearFrame() {
             if (!scanActivo) return;
             const video = document.getElementById("video-camara");
@@ -59,36 +203,26 @@
             requestAnimationFrame(escanearFrame);
         }
 
-        // Función blindada para recortar y extraer estrictamente los 18 dígitos del CURP
+        // Función blindada para recortar exactamente los 18 dígitos del CURP
         function extraerCurpDeTexto(texto) {
-            // Limpiar barras y espacios si vienen al inicio
             let limpio = texto.replace(/^[\|\s]+/, '');
-            
-            // Si el texto trae la estructura larga separada por pipes o barras, tomamos el primer bloque de 18 caracteres
-            // O buscamos mediante expresión regular el patrón exacto del CURP
             const regexCurp = /[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[0-9A-Z][0-9]/;
             const coincidencia = limpio.match(regexCurp);
             
             if (coincidencia) {
-                return coincidencia[0]; // Retorna exactamente los 18 caracteres limpios
+                return coincidencia[0];
             }
-            
-            // Alternativa: Si viene al inicio de la cadena seguido de '||' u otros caracteres
             if (limpio.length >= 18) {
                 let posibleCurp = limpio.substring(0, 18);
-                // Validar que sean letras y números en formato CURP básico
                 if (/^[A-Z0-9]{18}$/.test(posibleCurp)) {
                     return posibleCurp;
                 }
             }
-            
             return null;
         }
 
         function ejecutarBusquedaManual() {
             let textoIngresado = document.getElementById("txtCurpInput").value.trim().toUpperCase();
-            
-            // Aplicar el mismo filtro limpiador por si pegaron la cadena completa con pipes
             let curpLimpio = extraerCurpDeTexto(textoIngresado);
             
             if (!curpLimpio || curpLimpio.length !== 18) {
@@ -96,7 +230,6 @@
                 return;
             }
             
-            // Actualizar el input visualmente con los 18 dígitos limpios
             document.getElementById("txtCurpInput").value = curpLimpio;
             consultarCurpBackend(curpLimpio);
         }
@@ -106,7 +239,7 @@
 
             document.getElementById("panelResultado").classList.remove("hidden");
             
-            // Aquí se conectará a tu Apps Script real
+            // Aquí puedes conectar el fetch real a tu Apps Script cuando lo desees
             console.log("Consultando CURP limpio: " + curp);
         }
 
@@ -124,3 +257,5 @@
             alert("📂 Convocatoria Anterior: Tal vez la tarjeta está en otro universo de tarjetas, buscar en otros nominales.");
         }
     </script>
+</body>
+</html>
