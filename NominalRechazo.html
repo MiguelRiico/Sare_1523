@@ -30,7 +30,7 @@
 
     <!-- HEADER -->
     <header class="bg-gob-primary text-white shadow-md">
-        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center flex-wrap gap-2">
             <div class="flex items-center space-x-4">
                 <div class="bg-white text-gob-primary font-bold px-3 py-2 text-xs rounded shadow">
                     GOBIERNO DE MÉXICO
@@ -40,9 +40,15 @@
                     <p class="text-xs text-red-200">Módulo de Validación en Ventanilla</p>
                 </div>
             </div>
-            <button onclick="limpiarTodo()" class="bg-amber-500 hover:bg-amber-600 text-white font-medium text-xs px-4 py-2 rounded shadow">
-                Reiniciar
-            </button>
+            <div class="flex items-center space-x-2">
+                <!-- Botón de retorno al Operativo Sibuems -->
+                <a href="OperativoSibuems.html" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs px-3 py-2 rounded shadow transition flex items-center space-x-1">
+                    <span>⬅️ Volver a Operativo SIBUEMS</span>
+                </a>
+                <button onclick="limpiarTodo()" class="bg-amber-500 hover:bg-amber-600 text-white font-medium text-xs px-4 py-2 rounded shadow">
+                    Reiniciar
+                </button>
+            </div>
         </div>
     </header>
 
