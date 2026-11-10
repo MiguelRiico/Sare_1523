@@ -10,13 +10,6 @@
     <style>
         body { font-family: 'Public Sans', sans-serif; background-color: #0f172a; }
         .bg-gob-primary { background-color: #691C32; }
-        /* Estilo para el botón interruptor (Switch) */
-        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #475569; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: #059669; }
-        input:checked + .slider:before { transform: translateX(24px); }
         @keyframes blink { 0% { opacity: .2; } 20% { opacity: 1; } 100% { opacity: .2; } }
         .saving span { animation-name: blink; animation-duration: 1.4s; animation-iteration-count: infinite; animation-fill-mode: both; }
         .saving span:nth-child(2) { animation-delay: .2s; }
@@ -40,44 +33,23 @@
     <!-- CONTENIDO PRINCIPAL -->
     <main class="max-w-4xl w-full mx-auto p-4 flex-grow space-y-6">
 
-        <!-- PANEL DE CONTROL DE ENTRADA (INTERRUPTOR CÁMARA / TECLADO) -->
+        <!-- 1. MÓDULO DE CÁMARA QR (ESTÁ HASTA ARRIBA Y ES LA OPCIÓN PRINCIPAL) -->
         <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-4">
             <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-                <h2 id="tituloModo" class="text-sm font-bold text-emerald-400 uppercase">📷 Modo Principal: Escáner de Cámara QR</h2>
-                
-                <!-- Interruptor (Switch) -->
-                <div class="flex items-center space-x-2">
-                    <span class="text-xs text-slate-400 font-medium">Teclado</span>
-                    <label class="switch">
-                        <input type="checkbox" id="modoSwitch" checked onchange="cambiarModoEntrada()">
-                        <span class="slider"></span>
-                    </label>
-                    <span class="text-xs text-emerald-400 font-medium">Cámara</span>
-                </div>
+                <h2 class="text-sm font-bold text-emerald-400 uppercase">📷 Lector Principal: Escáner de Cámara QR</h2>
+                <button onclick="reiniciarEscaneo()" class="bg-slate-700 hover:bg-slate-600 text-xs px-3 py-1.5 rounded text-white">🔄 Reiniciar Cámara</button>
             </div>
 
-            <!-- VISTA DE CÁMARA (Por defecto ACTIVA) -->
-            <div id="contenedorCamaraView" class="space-y-3">
-                <div class="relative w-full h-56 bg-black rounded-lg overflow-hidden border border-slate-700 flex items-center justify-center">
+            <!-- Visor de Cámara Activo por Defecto -->
+            <div class="space-y-3">
+                <div class="relative w-full h-64 bg-black rounded-lg overflow-hidden border border-slate-700 flex items-center justify-center">
                     <video id="video-camara" class="absolute inset-0 w-full h-full object-cover" muted playsinline></video>
                     <canvas id="canvas-camara" class="hidden"></canvas>
-                    <div class="absolute inset-0 border-2 border-emerald-500/40 rounded pointer-events-none flex items-center justify-center">
-                        <span class="bg-black/70 text-emerald-300 text-xs px-3 py-1.5 rounded shadow">Apunta la credencial al QR</span>
+                    <div class="absolute inset-0 border-2 border-emerald-500/50 rounded pointer-events-none flex items-center justify-center">
+                        <span class="bg-black/70 text-emerald-300 text-xs px-3 py-1.5 rounded shadow">Apunta el código QR de la credencial</span>
                     </div>
                 </div>
-                <p id="camaraStatus" class="text-xs text-center text-amber-400 font-mono">Cámara activa y buscando código QR automáticamente...</p>
-            </div>
-
-            <!-- VISTA DE TECLADO (Oculta hasta que muevas el switch) -->
-            <div id="contenedorTecladoView" class="space-y-3 hidden">
-                <label for="txtCurpInput" class="block text-xs font-semibold text-slate-300 uppercase">Ingrese o Pegue el CURP (18 Dígitos):</label>
-                <div class="flex space-x-2">
-                    <input type="text" id="txtCurpInput" maxlength="18" placeholder="Ej. NAMU110714HMCVRBA2" 
-                        class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white uppercase font-mono tracking-wider focus:outline-none focus:border-emerald-500">
-                    <button onclick="ejecutarBusquedaManual()" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-3 rounded-lg text-sm shadow">
-                        Buscar
-                    </button>
-                </div>
+                <p id="camaraStatus" class="text-xs text-center text-amber-400 font-mono">Cámara activa escaneando en ráfaga...</p>
             </div>
 
             <!-- Botones de Control Especial -->
@@ -122,7 +94,7 @@
                 </div>
                 <div class="bg-slate-900 p-2.5 rounded border border-slate-700/60">
                     <span class="text-xs text-slate-400 block">Programa:</span>
-                    <span id="resPrograma" class="font-medium text-slate-200">SIBUEMS</span>
+                    <span id="resPrograma" class="font-medium text-slate-200">BUEMS</span>
                 </div>
             </div>
 
@@ -165,38 +137,16 @@
 
     <!-- SCRIPT DE OPERACIÓN -->
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbzqjywaoXwh86Z10yB5R-1o8YYgcZjW467fPhbBFjkOCxky82holBY7O_4tIbdHqxC7/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbzQGwzlNC8f3ACOqJ8N34kiVB1E0DbIH9x0-_F8n2SGgj1G1NDtofNh5q-tleZKgfpU/exec";
         const usuarioActual = sessionStorage.getItem("sare_user") || "OPERADOR_CAMPO";
         document.getElementById("lblOperador").textContent = `Operador: ${usuarioActual}`;
 
         let streamCamara = null;
         let scanActivo = false;
 
-        // INICIAR CÁMARA AUTOMÁTICAMENTE AL ABRIR LA PÁGINA
         window.addEventListener("DOMContentLoaded", () => {
             iniciarCamaraPrincipal();
         });
-
-        // Alternar entre Cámara y Teclado mediante el Switch
-        function cambiarModoEntrada() {
-            const sw = document.getElementById("modoSwitch").checked;
-            const viewCam = document.getElementById("contenedorCamaraView");
-            const viewTeclado = document.getElementById("contenedorTecladoView");
-            const titulo = document.getElementById("tituloModo");
-
-            if (sw) {
-                viewCam.classList.remove("hidden");
-                viewTeclado.classList.add("hidden");
-                titulo.textContent = "📷 Modo Principal: Escáner de Cámara QR";
-                iniciarCamaraPrincipal();
-            } else {
-                viewCam.classList.add("hidden");
-                viewTeclado.classList.remove("hidden");
-                titulo.textContent = "⌨️ Modo Principal: Entrada por Teclado / Pistola";
-                detenerCamaraPrincipal();
-                document.getElementById("txtCurpInput").focus();
-            }
-        }
 
         async function iniciarCamaraPrincipal() {
             const video = document.getElementById("video-camara");
@@ -210,19 +160,15 @@
                 status.textContent = "Cámara activa. Apunte al código QR...";
                 requestAnimationFrame(escanearFrame);
             } catch (e) {
-                status.textContent = "Error al activar la cámara. Verifique permisos del navegador.";
+                status.textContent = "Error al activar la cámara. Verifique permisos del navegador en HTTPS.";
             }
         }
 
-        function detenerCamaraPrincipal() {
-            scanActivo = false;
-            if (streamCamara) {
-                streamCamara.getTracks().forEach(track => track.stop());
-                streamCamara = null;
-            }
+        function reiniciarEscaneo() {
+            document.getElementById("panelResultado").classList.add("hidden");
+            iniciarCamaraPrincipal();
         }
 
-        // Bucle de escaneo con extractor de 18 dígitos exactos
         function escanearFrame() {
             if (!scanActivo) return;
             const video = document.getElementById("video-camara");
@@ -239,7 +185,10 @@
                 if (code) {
                     let curpExtraido = extraerCurpDeTexto(code.data);
                     if (curpExtraido && curpExtraido.length === 18) {
-                        detenerCamaraPrincipal();
+                        scanActivo = false;
+                        if (streamCamara) {
+                            streamCamara.getTracks().forEach(track => track.stop());
+                        }
                         consultarCurpBackend(curpExtraido);
                         return;
                     }
@@ -259,16 +208,6 @@
             let generalLimpio = limpio.replace(/[^A-Z0-9]/gi, '').toUpperCase();
             if (generalLimpio.length >= 18) return generalLimpio.substring(0, 18);
             return null;
-        }
-
-        function ejecutarBusquedaManual() {
-            let texto = document.getElementById("txtCurpInput").value.trim();
-            let curp = extraerCurpDeTexto(texto);
-            if (!curp || curp.length !== 18) {
-                alert("Ingrese un CURP válido de 18 caracteres.");
-                return;
-            }
-            consultarCurpBackend(curp);
         }
 
         async function consultarCurpBackend(curp) {
@@ -303,7 +242,7 @@
 
             const alertaFecha = document.getElementById("contenedorAlertaFecha");
             alertaFecha.className = "p-3 rounded-lg border text-sm bg-emerald-950/60 border-emerald-600 text-emerald-200";
-            alertaFecha.innerHTML = `<strong>✅ Sede Asignada:</strong> ${p.programacion.sede} (Fecha: ${p.programacion.fechaEntrega})`;
+            alertaFecha.innerHTML = `<strong>✅ Sede Asignada:</strong> ${p.programacion.sede} <br><strong>📅 Fecha:</strong> ${p.programacion.fechaEntrega}`;
         }
 
         function mostrarNoEncontrado(curp) {
@@ -326,14 +265,6 @@
             const alerta = document.getElementById("alertaMenorEdad");
             if (!esMayor) alerta.classList.remove("hidden");
             else alerta.classList.add("hidden");
-        }
-
-        function limpiarTodo() {
-            document.getElementById("txtCurpInput").value = "";
-            document.getElementById("panelResultado").classList.add("hidden");
-            if (document.getElementById("modoSwitch").checked) {
-                iniciarCamaraPrincipal();
-            }
         }
     </script>
 </body>
