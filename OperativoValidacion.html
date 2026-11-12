@@ -112,16 +112,16 @@
         <div id="seccionInstrucciones" class="bg-white rounded-xl shadow-md p-6 border border-slate-200 space-y-6 hidden">
             <div>
                 <h2 class="text-base font-bold text-gray-800 flex items-center gap-2">
-                    <span>📖</span> Guía de Uso Rápido para Ventanilla
+                    <span>📖</span> Guía de Uso Rápido y Solución de Cámara
                 </h2>
-                <p class="text-xs text-slate-500 mt-1">Siga estos pasos para validar y registrar la localización:</p>
+                <p class="text-xs text-slate-500 mt-1">Recomendaciones para el funcionamiento correcto del escáner QR:</p>
             </div>
             <div class="space-y-4 text-sm text-gray-700">
                 <div class="flex gap-3 bg-slate-50 p-4 rounded-lg border border-slate-100">
                     <div class="bg-[#691C32] text-white font-bold w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs">1</div>
                     <div class="space-y-1">
-                        <p class="font-bold text-gray-900">Búsqueda Automática o Manual</p>
-                        <p class="text-xs text-slate-600">Al completar los 18 caracteres del CURP o escanear el QR, el sistema consulta el expediente y registra automáticamente que fue localizado por el usuario de sesión.</p>
+                        <p class="font-bold text-gray-900">Permisos de Cámara y Protocolo HTTPS</p>
+                        <p class="text-xs text-slate-600">Los navegadores móviles exigen que la página esté abierta mediante <strong>https://</strong> (GitHub Pages) y que se otorguen permisos de cámara en la configuración del navegador.</p>
                     </div>
                 </div>
             </div>
@@ -134,7 +134,7 @@
                 <button onclick="detenerEscanner()" class="bg-red-600 hover:bg-red-700 text-xs px-3 py-1 rounded font-bold">Cerrar</button>
             </div>
             <div class="relative max-w-sm mx-auto overflow-hidden rounded-lg border-2 border-amber-500">
-                <video id="videoPreview" class="w-full h-64 object-cover"></video>
+                <video id="videoPreview" class="w-full h-64 object-cover" autoplay playsinline muted></video>
             </div>
             <p id="scannerStatus" class="text-xs text-amber-400 font-mono">Buscando código QR...</p>
             <canvas id="canvasCanvas" class="hidden"></canvas>
@@ -387,14 +387,28 @@
             container.classList.remove('hidden');
             status.innerText = "Iniciando cámara trasera...";
 
+            // Verificar si el navegador soporta getUserMedia
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                status.innerText = "Error: Tu navegador no soporta el acceso a la cámara.";
+                return;
+            }
+
             try {
-                videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                videoStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: { exact: "environment" } } 
+                }).catch(() => {
+                    // Fallback si la cámara trasera exacta no está disponible
+                    return navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                });
+
                 video.srcObject = videoStream;
                 video.setAttribute("playsinline", true);
-                video.play();
+                await video.play();
+                status.innerText = "Buscando código QR...";
                 requestAnimationFrame(escanearFrame);
             } catch (err) {
-                status.innerText = "Error: No se pudo acceder a la cámara.";
+                console.error(err);
+                status.innerText = "Error: No se pudo acceder a la cámara. Revisa los permisos o usa HTTPS.";
             }
         }
 
@@ -403,24 +417,28 @@
             const canvasElement = document.getElementById('canvasCanvas');
             const status = document.getElementById('scannerStatus');
 
-            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            if (video && video.readyState === video.HAVE_ENOUGH_DATA) {
                 canvasElement.height = video.videoHeight;
                 canvasElement.width = video.videoWidth;
                 const canvas = canvasElement.getContext("2d");
                 canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
                 
-                const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
-                const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+                try {
+                    const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+                    const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
 
-                if (code) {
-                    let textoEscaneado = code.data.trim().toUpperCase();
-                    if (textoEscaneado.length >= 18) {
-                        let curpExtraido = textoEscaneado.substring(0, 18);
-                        document.getElementById('curpInput').value = curpExtraido;
-                        detenerEscanner();
-                        consultarCurp();
-                        return;
+                    if (code) {
+                        let textoEscaneado = code.data.trim().toUpperCase();
+                        if (textoEscaneado.length >= 18) {
+                            let curpExtraido = textoEscaneado.substring(0, 18);
+                            document.getElementById('curpInput').value = curpExtraido;
+                            detenerEscanner();
+                            consultarCurp();
+                            return;
+                        }
                     }
+                } catch (e) {
+                    console.error("Error procesando frame QR:", e);
                 }
             }
             if (videoStream) {
