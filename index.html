@@ -94,14 +94,14 @@
             </form>
         </div>
 
-        <!-- 3. CONTENEDOR DEL MENÚ PRINCIPAL (DASHBOARD) REORGANIZADO EN 3 MÓDULOS -->
+        <!-- 3. CONTENEDOR DEL MENÚ PRINCIPAL (DASHBOARD) ORGANIZADO EN 4 MÓDULOS -->
         <div id="dashboard-container" class="space-y-8 hidden">
             <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-gob-primary">
                 <h2 id="greeting-title" class="text-xl font-bold text-gray-800 mb-1">Bienvenido al Sistema</h2>
                 <p class="text-xs text-gray-500">Seleccione el módulo de operación requerido:</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
                 <!-- 1ER MÓDULO: OPERATIVO BUEMS -->
                 <div class="bg-gradient-to-b from-emerald-50 to-white rounded-2xl shadow-lg p-6 border-2 border-emerald-600 flex flex-col justify-between space-y-4">
@@ -111,10 +111,10 @@
                             <span class="bg-emerald-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase shadow">Módulo 1</span>
                         </div>
                         <h3 class="text-base font-black text-emerald-900 uppercase tracking-wide">Operativo BUEMS</h3>
-                        <p class="text-xs text-gray-600 mt-2">Módulo móvil en campo con escáner QR automático, validación de fechas de entrega y control de menores de 15 años.</p>
+                        <p class="text-xs text-gray-600 mt-2">Módulo móvil en campo con escáner QR automático y validación de fechas de entrega.</p>
                     </div>
                     <a href="OperativoSibuems.html" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 px-4 rounded-xl text-xs text-center uppercase tracking-wider transition shadow">
-                        Ingresar a Operativo &rarr;
+                        Ingresar &rarr;
                     </a>
                 </div>
 
@@ -126,10 +126,10 @@
                             <span class="bg-amber-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase shadow">Módulo 2</span>
                         </div>
                         <h3 class="text-base font-black text-amber-900 uppercase tracking-wide">Rechazos</h3>
-                        <p class="text-xs text-gray-600 mt-2">Filtro nominal y validación rápida de beneficiarios con tarjetas reemplazadas y control de folios.</p>
+                        <p class="text-xs text-gray-600 mt-2">Filtro nominal y validación rápida de beneficiarios con tarjetas reemplazadas.</p>
                     </div>
                     <a href="NominalRechazo.html" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-bold py-3 px-4 rounded-xl text-xs text-center uppercase tracking-wider transition shadow">
-                        Ingresar a Rechazos &rarr;
+                        Ingresar &rarr;
                     </a>
                 </div>
 
@@ -141,23 +141,38 @@
                             <span class="bg-slate-700 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase shadow">Módulo 3</span>
                         </div>
                         <h3 class="text-base font-black text-slate-900 uppercase tracking-wide">Oficina</h3>
-                        <p class="text-xs text-gray-600 mt-2">Atención en ventanilla, módulos de vigencia, filtro nominal de rezago por nombre y salidas de inventario.</p>
+                        <p class="text-xs text-gray-600 mt-2">Atención en ventanilla, rezago por nombre, vigencia y salidas de inventario.</p>
                     </div>
                     <!-- Sub-enlaces organizados de oficina -->
                     <div class="grid grid-cols-2 gap-2 pt-2">
                         <a href="FiltroSare.html" class="bg-slate-700 hover:bg-slate-800 text-white font-semibold py-2 px-2 rounded-lg text-[11px] text-center transition">
-                            Rezago (Nombre)
+                            Rezago
                         </a>
                         <a href="Vigencia.html" class="bg-[#691C32] hover:bg-[#521325] text-white font-semibold py-2 px-2 rounded-lg text-[11px] text-center transition">
                             Vigencia
                         </a>
                         <a href="Rechazo.html" class="bg-amber-700 hover:bg-amber-800 text-white font-semibold py-2 px-2 rounded-lg text-[11px] text-center transition">
-                            Rechazos Oficina
+                            Rechazos
                         </a>
                         <a href="SALIDA.html" class="bg-blue-700 hover:bg-blue-800 text-white font-semibold py-2 px-2 rounded-lg text-[11px] text-center transition">
-                            Salida Tarjetas
+                            Salidas
                         </a>
                     </div>
+                </div>
+
+                <!-- 4TO MÓDULO: OPERATIVO VALIDACIÓN (NUEVO) -->
+                <div class="bg-gradient-to-b from-purple-50 to-white rounded-2xl shadow-lg p-6 border-2 border-purple-700 flex flex-col justify-between space-y-4">
+                    <div>
+                        <div class="flex items-center justify-between border-b border-purple-200 pb-3 mb-3">
+                            <span class="text-2xl">🔍</span>
+                            <span class="bg-purple-700 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase shadow">Módulo 4</span>
+                        </div>
+                        <h3 class="text-base font-black text-purple-900 uppercase tracking-wide">Operativo Validación</h3>
+                        <p class="text-xs text-gray-600 mt-2">Búsqueda y escaneo QR con registro automático de localización y control de operador en sesión.</p>
+                    </div>
+                    <a href="OperativoValidacion.html" class="w-full bg-purple-800 hover:bg-purple-900 text-white font-bold py-3 px-4 rounded-xl text-xs text-center uppercase tracking-wider transition shadow">
+                        Ingresar &rarr;
+                    </a>
                 </div>
 
             </div>
