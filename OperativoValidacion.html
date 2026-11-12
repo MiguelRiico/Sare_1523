@@ -3,464 +3,297 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Operativo Validación - SARE 1523 Tultitlán</title>
+    <title>Panel de Acceso - Servidor Educativo SARE 1523</title>
+    <!-- Google Fonts & Tailwind CSS -->
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsQR@1.4.0/dist/jsQR.min.js"></script>
     <style>
         body { font-family: 'Public Sans', sans-serif; background-color: #f8fafc; }
-        .bg-gob-primary { background-color: #691C32; }
+        .bg-gob-primary { background-color: #691C32; } /* Guinda institucional */
         .text-gob-primary { color: #691C32; }
         .border-gob-primary { border-color: #691C32; }
         .btn-gob { background-color: #5b1328; transition: background-color 0.2s; }
         .btn-gob:hover { background-color: #440e1e; }
-        @keyframes blink { 0% { opacity: .2; } 20% { opacity: 1; } 100% { opacity: .2; } }
-        .saving span { animation-name: blink; animation-duration: 1.4s; animation-iteration-count: infinite; animation-fill-mode: both; }
-        .saving span:nth-child(2) { animation-delay: .2s; }
-        .saving span:nth-child(3) { animation-delay: .4s; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between">
 
-    <script>
-        // Verificar sesión activa desde el index del sistema SARE 1523
-        if (!sessionStorage.getItem("sare_user")) {
-            window.location.href = "index.html";
-        }
-    </script>
-
-    <!-- HEADER -->
+    <!-- HEADER INSTITUCIONAL -->
     <header class="bg-gob-primary text-white shadow-md">
-        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center flex-wrap gap-2">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-4">
                 <div class="bg-white text-gob-primary font-bold px-3 py-2 text-xs rounded shadow">
                     GOBIERNO DE MÉXICO
                 </div>
                 <div>
-                    <h1 class="text-lg font-semibold leading-tight">Operativo Validación - SARE 1523</h1>
-                    <p id="user-session-info" class="text-xs text-red-200">Cargando usuario...</p>
+                    <h1 class="text-lg font-semibold leading-tight">Servidor Educativo - SARE 1523</h1>
+                    <p class="text-xs text-red-200">Panel de Control y Acceso</p>
                 </div>
             </div>
-            <div class="flex items-center space-x-2">
-                <a href="index.html" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs px-3 py-2 rounded shadow transition flex items-center space-x-1">
-                    <span>⬅️ Menú Principal</span>
-                </a>
-                <button onclick="limpiarTodo()" class="bg-amber-500 hover:bg-amber-600 text-white font-medium text-xs px-4 py-2 rounded shadow">
-                    Reiniciar
+            <div id="header-user-info" class="hidden items-center space-x-3">
+                <span id="user-display" class="text-xs text-red-100 font-medium"></span>
+                <button onclick="handleLogout()" class="bg-amber-500 hover:bg-amber-600 text-white font-medium text-xs px-3 py-1.5 rounded shadow transition">
+                    Cerrar Sesión
                 </button>
             </div>
         </div>
     </header>
 
     <!-- CONTENIDO PRINCIPAL -->
-    <main class="max-w-4xl w-full mx-auto p-4 flex-grow space-y-6">
+    <main class="max-w-5xl w-full mx-auto p-4 flex-grow space-y-6 flex flex-col justify-center">
 
-        <!-- Selector de Pestañas -->
-        <div class="bg-white rounded-xl shadow-md p-2 border-t-4 border-gob-primary grid grid-cols-3 gap-2">
-            <button onclick="cambiarModo('curp')" id="tabCurp" class="py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-[#691C32] text-white shadow transition text-center">
-                🔍 Búsqueda CURP / QR
-            </button>
-            <button onclick="cambiarModo('nombre')" id="tabNombre" class="py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center">
-                👤 Buscar por Nombre
-            </button>
-            <button onclick="cambiarModo('instrucciones')" id="tabInstrucciones" class="py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center">
-                📖 Instrucciones
-            </button>
-        </div>
-
-        <!-- 1. SECCIÓN BÚSQUEDA POR CURP -->
-        <div id="seccionCurp" class="bg-white rounded-xl shadow-md p-6 border border-slate-200 space-y-4">
-            <div class="flex justify-between items-center flex-wrap gap-2">
-                <h2 class="text-sm font-bold text-gray-700 uppercase">Búsqueda Rápida por CURP o Código QR</h2>
-                <label class="flex items-center space-x-2 text-xs font-semibold text-slate-600 cursor-pointer select-none bg-slate-100 px-3 py-1.5 rounded-lg border">
-                    <input type="checkbox" id="checkManual" onchange="toggleModoManual()" class="rounded border-slate-300 text-[#691C32] focus:ring-[#691C32] w-4 h-4">
-                    <span>Habilitar Envío Manual con Teclado (Requiere Enter o Botón)</span>
-                </label>
+        <!-- 1. CONTENEDOR DE LOGIN -->
+        <div id="login-container" class="bg-white rounded-xl shadow-md p-6 sm:p-8 border-t-4 border-gob-primary max-w-md mx-auto w-full">
+            <div class="text-center mb-6">
+                <h2 class="text-xl font-bold text-gray-800">Acceso Restringido</h2>
+                <p class="text-xs text-gray-500 mt-1">Ingrese su número de usuario / folio asignado</p>
             </div>
 
-            <div class="flex flex-col sm:flex-row gap-3">
-                <input type="text" id="curpInput" maxlength="18" placeholder="Ingrese o escanee los 18 caracteres del CURP" 
-                    oninput="procesarEntradaCurp(this)" onkeydown="manejarEnterCurp(event)" autofocus
-                    class="flex-grow uppercase tracking-wider font-mono border border-gray-300 rounded-lg px-4 py-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#691C32]">
-                <div class="flex gap-2">
-                    <button onclick="consultarCurp()" class="btn-gob text-white font-medium px-6 py-3 rounded-lg text-sm shadow">
-                        Buscar
-                    </button>
+            <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Usuario / Folio</label>
+                    <input type="text" id="username" required placeholder="Ej. 1502371" 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#691C32] text-gray-700 font-mono">
                 </div>
-            </div>
-            <button onclick="iniciarEscanner()" class="w-full bg-[#b2571c] hover:bg-[#9a4b17] text-white font-medium py-3 px-4 rounded-lg flex items-center justify-center space-x-2 shadow transition">
-                <span>📷 Escanear QR con Cámara</span>
-            </button>
-        </div>
-
-        <!-- 2. SECCIÓN BÚSQUEDA POR NOMBRE -->
-        <div id="seccionNombre" class="bg-white rounded-xl shadow-md p-6 border border-slate-200 space-y-4 hidden">
-            <h2 class="text-sm font-bold text-gray-700 uppercase">Búsqueda por Coincidencia de Nombre</h2>
-            <div class="flex flex-col sm:flex-row gap-3">
-                <input type="text" id="nombreInput" placeholder="Ej. BEATRIZ SANCHEZ (o parte del nombre)" 
-                    oninput="this.value = this.value.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Z0-9 ]/g, '')"
-                    onkeydown="if(event.key==='Enter') consultarNombre();"
-                    class="flex-grow uppercase tracking-wider border border-gray-300 rounded-lg px-4 py-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#691C32]">
-                <button onclick="consultarNombre()" class="btn-gob text-white font-medium px-6 py-3 rounded-lg text-sm shadow">
-                    Buscar Coincidencias
+                <div id="password-group">
+                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Contraseña</label>
+                    <input type="password" id="password" placeholder="Ingrese su contraseña" 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#691C32] text-gray-700">
+                </div>
+                <button type="submit" id="login-btn" class="w-full btn-gob text-white font-medium py-3 rounded-lg shadow text-sm">
+                    Entrar al Sistema
                 </button>
-            </div>
-            <p class="text-xs text-slate-400">Escriba el nombre o apellido y presione Enter o Buscar.</p>
+                <p id="error-msg" class="text-red-600 text-xs text-center hidden font-medium mt-2"></p>
+                <p id="loading-msg" class="text-gob-primary text-xs text-center hidden font-medium mt-2">Verificando credenciales...</p>
+            </form>
         </div>
 
-        <!-- 3. SECCIÓN INSTRUCCIONES -->
-        <div id="seccionInstrucciones" class="bg-white rounded-xl shadow-md p-6 border border-slate-200 space-y-6 hidden">
-            <div>
-                <h2 class="text-base font-bold text-gray-800 flex items-center gap-2">
-                    <span>📖</span> Guía de Uso Rápido y Solución de Cámara
-                </h2>
-                <p class="text-xs text-slate-500 mt-1">Recomendaciones para el funcionamiento correcto del escáner QR:</p>
+        <!-- 2. CONTENEDOR DE CREACIÓN DE CONTRASEÑA (Primer Ingreso) -->
+        <div id="first-login-container" class="bg-white rounded-xl shadow-md p-6 sm:p-8 border-t-4 border-amber-500 max-w-md mx-auto w-full hidden">
+            <div class="text-center mb-6">
+                <span class="bg-amber-100 text-amber-800 text-xs px-2.5 py-1 rounded font-bold">PRIMER ACCESO</span>
+                <h2 class="text-xl font-bold text-gray-800 mt-2">Crea tu Contraseña</h2>
+                <p id="welcome-user-name" class="text-sm text-gray-600 mt-1 font-semibold"></p>
+                <p class="text-xs text-gray-500 mt-1">Es su primer ingreso. Establezca una contraseña personal para futuras sesiones.</p>
             </div>
-            <div class="space-y-4 text-sm text-gray-700">
-                <div class="flex gap-3 bg-slate-50 p-4 rounded-lg border border-slate-100">
-                    <div class="bg-[#691C32] text-white font-bold w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs">1</div>
-                    <div class="space-y-1">
-                        <p class="font-bold text-gray-900">Permisos de Cámara y Protocolo HTTPS</p>
-                        <p class="text-xs text-slate-600">Los navegadores móviles exigen que la página esté abierta mediante <strong>https://</strong> (GitHub Pages) y que se otorguen permisos de cámara en la configuración del navegador.</p>
+            <form onsubmit="handleSetPassword(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Nueva Contraseña</label>
+                    <input type="password" id="new-password" required placeholder="Mínimo 6 caracteres" 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#691C32] text-gray-700">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Confirma la Contraseña</label>
+                    <input type="password" id="confirm-password" required placeholder="Repita su contraseña" 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#691C32] text-gray-700">
+                </div>
+                <button type="submit" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-medium py-3 rounded-lg shadow text-sm transition">
+                    Guardar y Entrar
+                </button>
+                <p id="pass-error-msg" class="text-red-600 text-xs text-center hidden font-medium mt-2"></p>
+            </form>
+        </div>
+
+        <!-- 3. CONTENEDOR DEL MENÚ PRINCIPAL (DASHBOARD) ORGANIZADO EN 4 MÓDULOS -->
+        <div id="dashboard-container" class="space-y-8 hidden">
+            <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-gob-primary">
+                <h2 id="greeting-title" class="text-xl font-bold text-gray-800 mb-1">Bienvenido al Sistema</h2>
+                <p class="text-xs text-gray-500">Seleccione el módulo de operación requerido:</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+                <!-- 1ER MÓDULO: OPERATIVO BUEMS -->
+                <div class="bg-gradient-to-b from-emerald-50 to-white rounded-2xl shadow-lg p-6 border-2 border-emerald-600 flex flex-col justify-between space-y-4">
+                    <div>
+                        <div class="flex items-center justify-between border-b border-emerald-200 pb-3 mb-3">
+                            <span class="text-2xl">📷</span>
+                            <span class="bg-emerald-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase shadow">Módulo 1</span>
+                        </div>
+                        <h3 class="text-base font-black text-emerald-900 uppercase tracking-wide">Operativo BUEMS</h3>
+                        <p class="text-xs text-gray-600 mt-2">Módulo móvil en campo con escáner QR automático y validación de fechas de entrega.</p>
+                    </div>
+                    <a href="OperativoSibuems.html" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 px-4 rounded-xl text-xs text-center uppercase tracking-wider transition shadow">
+                        Ingresar &rarr;
+                    </a>
+                </div>
+
+                <!-- 2DO MÓDULO: RECHAZOS -->
+                <div class="bg-gradient-to-b from-amber-50 to-white rounded-2xl shadow-lg p-6 border-2 border-amber-500 flex flex-col justify-between space-y-4">
+                    <div>
+                        <div class="flex items-center justify-between border-b border-amber-200 pb-3 mb-3">
+                            <span class="text-2xl">🔄</span>
+                            <span class="bg-amber-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase shadow">Módulo 2</span>
+                        </div>
+                        <h3 class="text-base font-black text-amber-900 uppercase tracking-wide">Rechazos</h3>
+                        <p class="text-xs text-gray-600 mt-2">Filtro nominal y validación rápida de beneficiarios con tarjetas reemplazadas.</p>
+                    </div>
+                    <a href="NominalRechazo.html" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-bold py-3 px-4 rounded-xl text-xs text-center uppercase tracking-wider transition shadow">
+                        Ingresar &rarr;
+                    </a>
+                </div>
+
+                <!-- 3ER MÓDULO: OFICINA -->
+                <div class="bg-gradient-to-b from-slate-100 to-white rounded-2xl shadow-lg p-6 border-2 border-slate-700 flex flex-col justify-between space-y-4">
+                    <div>
+                        <div class="flex items-center justify-between border-b border-slate-300 pb-3 mb-3">
+                            <span class="text-2xl">🏢</span>
+                            <span class="bg-slate-700 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase shadow">Módulo 3</span>
+                        </div>
+                        <h3 class="text-base font-black text-slate-900 uppercase tracking-wide">Oficina</h3>
+                        <p class="text-xs text-gray-600 mt-2">Atención en ventanilla, rezago por nombre, vigencia y salidas de inventario.</p>
+                    </div>
+                    <!-- Sub-enlaces organizados de oficina -->
+                    <div class="grid grid-cols-2 gap-2 pt-2">
+                        <a href="FiltroSare.html" class="bg-slate-700 hover:bg-slate-800 text-white font-semibold py-2 px-2 rounded-lg text-[11px] text-center transition">
+                            Rezago
+                        </a>
+                        <a href="Vigencia.html" class="bg-[#691C32] hover:bg-[#521325] text-white font-semibold py-2 px-2 rounded-lg text-[11px] text-center transition">
+                            Vigencia
+                        </a>
+                        <a href="Rechazo.html" class="bg-amber-700 hover:bg-amber-800 text-white font-semibold py-2 px-2 rounded-lg text-[11px] text-center transition">
+                            Rechazos
+                        </a>
+                        <a href="SALIDA.html" class="bg-blue-700 hover:bg-blue-800 text-white font-semibold py-2 px-2 rounded-lg text-[11px] text-center transition">
+                            Salidas
+                        </a>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- MODAL DE CÁMARA -->
-        <div id="scannerContainer" class="bg-black rounded-xl p-4 shadow-inner text-center hidden space-y-3">
-            <div class="flex justify-between items-center text-white px-2">
-                <span class="text-xs font-mono">Apunta la cámara al código QR</span>
-                <button onclick="detenerEscanner()" class="bg-red-600 hover:bg-red-700 text-xs px-3 py-1 rounded font-bold">Cerrar</button>
-            </div>
-            <div class="relative max-w-sm mx-auto overflow-hidden rounded-lg border-2 border-amber-500">
-                <video id="videoPreview" class="w-full h-64 object-cover" autoplay playsinline muted></video>
-            </div>
-            <p id="scannerStatus" class="text-xs text-amber-400 font-mono">Buscando código QR...</p>
-            <canvas id="canvasCanvas" class="hidden"></canvas>
-        </div>
-
-        <!-- Indicador de Carga -->
-        <div id="loadingIndicator" class="text-center text-xs font-semibold text-slate-500 hidden">
-            <span class="saving">Consultando y registrando localización<span>.</span><span>.</span><span>.</span></span>
-        </div>
-
-        <!-- RESULTADOS (TARJETA INFORMATIVA DESTACADA) -->
-        <div id="resultadoCard" class="bg-white rounded-xl shadow-md p-6 border-l-8 border-gob-primary hidden relative space-y-4">
-            <div class="flex justify-between items-start border-b pb-3 flex-wrap gap-2">
-                <div>
-                    <h3 class="text-xs font-bold tracking-wider text-gray-400 uppercase">Resultado de Validación y Localización</h3>
-                    <p id="localizadoBadgeMsg" class="text-xs font-semibold text-emerald-700 mt-1">✅ Expediente localizado y registrado exitosamente</p>
+                <!-- 4TO MÓDULO: OPERATIVO VALIDACIÓN (NUEVO) -->
+                <div class="bg-gradient-to-b from-purple-50 to-white rounded-2xl shadow-lg p-6 border-2 border-purple-700 flex flex-col justify-between space-y-4">
+                    <div>
+                        <div class="flex items-center justify-between border-b border-purple-200 pb-3 mb-3">
+                            <span class="text-2xl">🔍</span>
+                            <span class="bg-purple-700 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase shadow">Módulo 4</span>
+                        </div>
+                        <h3 class="text-base font-black text-purple-900 uppercase tracking-wide">Operativo Validación</h3>
+                        <p class="text-xs text-gray-600 mt-2">Búsqueda y escaneo QR con registro automático de localización y control de operador en sesión.</p>
+                    </div>
+                    <a href="OperativoValidacion.html" class="w-full bg-purple-800 hover:bg-purple-900 text-white font-bold py-3 px-4 rounded-xl text-xs text-center uppercase tracking-wider transition shadow">
+                        Ingresar &rarr;
+                    </a>
                 </div>
-                <span id="badgeVigencia" class="text-xs font-bold px-2.5 py-1 rounded bg-emerald-100 text-emerald-800">REGISTRO ENCONTRADO</span>
-            </div>
-            
-            <!-- DATOS RESALTADOS -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
-                <div class="bg-white p-3 rounded-lg shadow-sm border-l-4 border-[#691C32]">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase">Municipio</p>
-                    <p id="resMunicipio" class="text-sm font-black text-gray-900">-</p>
-                </div>
-                <div class="bg-white p-3 rounded-lg shadow-sm border-l-4 border-amber-600">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase">CCT (Escuela)</p>
-                    <p id="resCct" class="text-sm font-black text-[#691C32]">-</p>
-                </div>
-                <div class="bg-white p-3 rounded-lg shadow-sm border-l-4 border-blue-600">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase">Programa</p>
-                    <p id="resPrograma" class="text-sm font-black text-blue-900">-</p>
-                </div>
+
             </div>
 
-            <div id="resultadoContent" class="space-y-2 text-xs sm:text-sm text-gray-700 px-1"></div>
-        </div>
-
-        <!-- LISTA DE COINCIDENCIAS -->
-        <div id="listaContainer" class="bg-white rounded-xl shadow-md p-6 border border-slate-200 hidden space-y-3">
-            <h3 class="text-sm font-bold text-gray-800">Coincidencias encontradas:</h3>
-            <div id="listaResultados" class="divide-y divide-slate-100 max-h-96 overflow-y-auto"></div>
         </div>
 
     </main>
 
+    <!-- Footer Institucional -->
     <footer class="bg-slate-100 border-t border-slate-200 py-4 text-center text-xs text-slate-500">
-        Coordinación Nacional de Becas para el Bienestar • Región 1523 (Tultitlán)
+        Coordinación Nacional de Becas para el Bienestar • Región 1523 (Tultitlán) &copy; 2026
     </footer>
 
-    <!-- SCRIPT DE CONTROL Y REGISTRO DE LOCALIZACIÓN -->
+    <!-- SCRIPT DE CONTROL Y GESTIÓN DE NIVELES -->
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbx4V2jjY2QCN1CV3elenVYkiwH7ikS5I_aLXUMxupZhxqTaoW70UJUeyVmmGPFnIAX17A/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbzvVdEGOq12YnsW3sNmo8O4cUwf8m5ubAj1VO3lKh87l3hBIN9horMOZrWJuJxp_Clg/exec";
 
-        let videoStream = null;
-        let scanningInterval = null;
-        let modoManualActivo = false;
-        let usuarioActual = "";
-        let nombreUsuarioActual = "";
+        let tempUserForPassword = "";
 
         window.addEventListener("DOMContentLoaded", () => {
-            usuarioActual = sessionStorage.getItem("sare_user") || "INVITADO";
-            nombreUsuarioActual = sessionStorage.getItem("sare_name") || usuarioActual;
-            document.getElementById("user-session-info").textContent = `Usuario: ${nombreUsuarioActual} (Folio: ${usuarioActual})`;
+            const savedUser = sessionStorage.getItem("sare_user");
+            const savedName = sessionStorage.getItem("sare_name");
+            const savedNivel = sessionStorage.getItem("sare_nivel") || "3";
+            
+            if (savedUser) {
+                showDashboard(savedUser, savedName, savedNivel);
+            }
         });
 
-        function cambiarModo(modo) {
-            limpiarTodo();
-            const sCurp = document.getElementById('seccionCurp');
-            const sNombre = document.getElementById('seccionNombre');
-            const sInstrucciones = document.getElementById('seccionInstrucciones');
-            
-            const tCurp = document.getElementById('tabCurp');
-            const tNombre = document.getElementById('tabNombre');
-            const tInstrucciones = document.getElementById('tabInstrucciones');
+        async function handleLogin(event) {
+            event.preventDefault();
+            const usuario = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value;
+            const errorMsg = document.getElementById("error-msg");
+            const loadingMsg = document.getElementById("loading-msg");
 
-            tCurp.className = "py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center";
-            tNombre.className = "py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center";
-            tInstrucciones.className = "py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center";
-
-            sCurp.classList.add('hidden');
-            sNombre.classList.add('hidden');
-            sInstrucciones.classList.add('hidden');
-
-            if (modo === 'curp') {
-                sCurp.classList.remove('hidden');
-                tCurp.className = "py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-[#691C32] text-white shadow transition text-center";
-                document.getElementById('curpInput').focus();
-            } else if (modo === 'nombre') {
-                sNombre.classList.remove('hidden');
-                tNombre.className = "py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-[#691C32] text-white shadow transition text-center";
-                document.getElementById('nombreInput').focus();
-            } else if (modo === 'instrucciones') {
-                sInstrucciones.classList.remove('hidden');
-                tInstrucciones.className = "py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-[#691C32] text-white shadow transition text-center";
-            }
-        }
-
-        function toggleModoManual() {
-            modoManualActivo = document.getElementById('checkManual').checked;
-            document.getElementById('curpInput').focus();
-        }
-
-        function procesarEntradaCurp(input) {
-            let val = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-            input.value = val;
-
-            if (!modoManualActivo && val.length === 18) {
-                consultarCurp();
-            }
-        }
-
-        function manejarEnterCurp(event) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                consultarCurp();
-            }
-        }
-
-        async function consultarCurp() {
-            let curp = document.getElementById('curpInput').value.trim().toUpperCase();
-            if (curp.length !== 18) {
-                alert("El CURP debe contener exactamente 18 caracteres.");
-                return;
-            }
-            ejecutarBusquedaYRegistro(`?curp=${encodeURIComponent(curp)}&localizadoPor=${encodeURIComponent(nombreUsuarioActual + ' (' + usuarioActual + ')')}`);
-        }
-
-        async function consultarNombre() {
-            let nombre = document.getElementById('nombreInput').value.trim();
-            if (nombre.length < 3) {
-                alert("Ingrese al menos 3 caracteres para buscar por nombre.");
-                return;
-            }
-            ejecutarBusquedaYRegistro(`?nombre=${encodeURIComponent(nombre)}`);
-        }
-
-        async function ejecutarBusquedaYRegistro(queryParam) {
-            ocultarResultados();
-            const loadingIndicator = document.getElementById('loadingIndicator');
-            loadingIndicator.classList.remove('hidden');
+            errorMsg.classList.add("hidden");
+            loadingMsg.classList.remove("hidden");
 
             try {
-                const response = await fetch(`${API_URL}${queryParam}`);
-                const data = await response.json();
-
-                loadingIndicator.classList.add('hidden');
-
-                if (!data.encontrado) {
-                    mostrarNoEncontrado();
-                    return;
-                }
-
-                if (data.tipo === "unico") {
-                    mostrarResultadoUnico(data);
-                } else if (data.tipo === "lista") {
-                    mostrarListaCoincidencias(data.resultados);
-                }
-
-            } catch (error) {
-                loadingIndicator.classList.add('hidden');
-                alert("Error de conexión con el servidor.");
-            }
-        }
-
-        function mostrarResultadoUnico(p) {
-            const card = document.getElementById('resultadoCard');
-            card.classList.remove('hidden', 'border-red-500');
-            card.classList.add('border-gob-primary');
-
-            document.getElementById('resMunicipio').textContent = p.municipio;
-            document.getElementById('resCct').textContent = p.cct;
-            document.getElementById('resPrograma').textContent = p.programa;
-
-            document.getElementById('localizadoBadgeMsg').textContent = `✅ Localizado y registrado por: ${nombreUsuarioActual} (Folio: ${usuarioActual})`;
-
-            const content = document.getElementById('resultadoContent');
-            content.innerHTML = `
-                <p><strong>BENEFICIARIO (CONFIRMAR IDENTIDAD):</strong> <span class="text-gray-900 font-bold uppercase text-sm">${p.nombreCompleto}</span></p>
-                <p><strong>CURP:</strong> <span class="font-mono font-bold">${p.curp}</span></p>
-                <p><strong>ESCUELA:</strong> ${p.escuela}</p>
-            `;
-        }
-
-        function mostrarListaCoincidencias(lista) {
-            const container = document.getElementById('listaContainer');
-            const listaRes = document.getElementById('listaResultados');
-            container.classList.remove('hidden');
-            listaRes.innerHTML = "";
-
-            lista.forEach(item => {
-                const div = document.createElement('div');
-                div.className = "py-3.5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 hover:bg-slate-50 px-2 rounded cursor-pointer";
-                div.innerHTML = `
-                    <div class="space-y-1">
-                        <p class="font-bold text-gray-900 text-sm uppercase">${item.nombreCompleto}</p>
-                        <p class="text-xs font-mono">
-                            CURP: <span class="text-slate-700">${item.curp}</span> | 
-                            CCT: <strong class="text-sm text-[#691C32]">${item.cct}</strong>
-                        </p>
-                        <p class="text-xs text-slate-600">
-                            Municipio: <span class="font-medium">${item.municipio}</span> | 
-                            Programa: <span class="font-medium">${item.programa}</span>
-                        </p>
-                    </div>
-                    <button onclick="seleccionarDeLista('${item.curp}')" class="btn-gob text-white text-xs px-3.5 py-2 rounded shadow">
-                        Seleccionar y Registrar
-                    </button>
-                `;
-                listaRes.appendChild(div);
-            });
-        }
-
-        function seleccionarDeLista(curp) {
-            document.getElementById('listaContainer').classList.add('hidden');
-            document.getElementById('curpInput').value = curp;
-            ejecutarBusquedaYRegistro(`?curp=${encodeURIComponent(curp)}&localizadoPor=${encodeURIComponent(nombreUsuarioActual + ' (' + usuarioActual + ')')}`);
-        }
-
-        function mostrarNoEncontrado() {
-            const card = document.getElementById('resultadoCard');
-            card.classList.remove('hidden', 'border-gob-primary');
-            card.classList.add('border-red-500');
-
-            document.getElementById('resMunicipio').textContent = "NO ENCONTRADO";
-            document.getElementById('resCct').textContent = "NO ENCONTRADO";
-            document.getElementById('resPrograma').textContent = "NO ENCONTRADO";
-            document.getElementById('localizadoBadgeMsg').textContent = "❌ Sin registro en base de datos";
-
-            const content = document.getElementById('resultadoContent');
-            content.innerHTML = `
-                <div class="bg-red-50 border border-red-200 p-4 rounded-lg text-red-700 text-center space-y-1">
-                    <p class="font-bold text-base">❌ Sin registro encontrado</p>
-                    <p class="text-xs">Favor de verificar el CURP o pasar al área correspondiente de ventanilla.</p>
-                </div>
-            `;
-        }
-
-        function ocultarResultados() {
-            document.getElementById('resultadoCard').classList.add('hidden');
-            document.getElementById('listaContainer').classList.add('hidden');
-        }
-
-        async function iniciarEscanner() {
-            const container = document.getElementById('scannerContainer');
-            const video = document.getElementById('videoPreview');
-            const status = document.getElementById('scannerStatus');
-            
-            container.classList.remove('hidden');
-            status.innerText = "Iniciando cámara trasera...";
-
-            // Verificar si el navegador soporta getUserMedia
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                status.innerText = "Error: Tu navegador no soporta el acceso a la cámara.";
-                return;
-            }
-
-            try {
-                videoStream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: { exact: "environment" } } 
-                }).catch(() => {
-                    // Fallback si la cámara trasera exacta no está disponible
-                    return navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    body: JSON.stringify({ action: "login", usuario: usuario, password: password })
                 });
+                const result = await response.json();
+                loadingMsg.classList.add("hidden");
 
-                video.srcObject = videoStream;
-                video.setAttribute("playsinline", true);
-                await video.play();
-                status.innerText = "Buscando código QR...";
-                requestAnimationFrame(escanearFrame);
-            } catch (err) {
-                console.error(err);
-                status.innerText = "Error: No se pudo acceder a la cámara. Revisa los permisos o usa HTTPS.";
-            }
-        }
-
-        function escanearFrame() {
-            const video = document.getElementById('videoPreview');
-            const canvasElement = document.getElementById('canvasCanvas');
-            const status = document.getElementById('scannerStatus');
-
-            if (video && video.readyState === video.HAVE_ENOUGH_DATA) {
-                canvasElement.height = video.videoHeight;
-                canvasElement.width = video.videoWidth;
-                const canvas = canvasElement.getContext("2d");
-                canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
-                
-                try {
-                    const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
-                    const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
-
-                    if (code) {
-                        let textoEscaneado = code.data.trim().toUpperCase();
-                        if (textoEscaneado.length >= 18) {
-                            let curpExtraido = textoEscaneado.substring(0, 18);
-                            document.getElementById('curpInput').value = curpExtraido;
-                            detenerEscanner();
-                            consultarCurp();
-                            return;
-                        }
-                    }
-                } catch (e) {
-                    console.error("Error procesando frame QR:", e);
+                if (result.status === "success") {
+                    sessionStorage.setItem("sare_user", result.usuario);
+                    sessionStorage.setItem("sare_name", result.nombre);
+                    sessionStorage.setItem("sare_nivel", result.nivel || "3");
+                    showDashboard(result.usuario, result.nombre, result.nivel || "3");
+                } else if (result.status === "first_login") {
+                    tempUserForPassword = result.usuario;
+                    document.getElementById("welcome-user-name").textContent = `Usuario: ${result.nombre}`;
+                    document.getElementById("login-container").classList.add("hidden");
+                    document.getElementById("first-login-container").classList.remove("hidden");
+                } else {
+                    errorMsg.textContent = result.message || "Credenciales incorrectas.";
+                    errorMsg.classList.remove("hidden");
                 }
-            }
-            if (videoStream) {
-                scanningInterval = requestAnimationFrame(escanearFrame);
+            } catch (err) {
+                loadingMsg.classList.add("hidden");
+                errorMsg.textContent = "Error de conexión con el servidor.";
+                errorMsg.classList.add("hidden");
             }
         }
 
-        function detenerEscanner() {
-            if (videoStream) {
-                videoStream.getTracks().forEach(track => track.stop());
-                videoStream = null;
+        async function handleSetPassword(event) {
+            event.preventDefault();
+            const p1 = document.getElementById("new-password").value;
+            const p2 = document.getElementById("confirm-password").value;
+            const passError = document.getElementById("pass-error-msg");
+
+            if (p1 !== p2) {
+                passError.textContent = "Las contraseñas no coinciden.";
+                passError.classList.remove("hidden");
+                return;
             }
-            if (scanningInterval) cancelAnimationFrame(scanningInterval);
-            document.getElementById('scannerContainer').classList.add('hidden');
+            if (p1.length < 6) {
+                passError.textContent = "La contraseña debe tener al menos 6 caracteres.";
+                passError.classList.remove("hidden");
+                return;
+            }
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    body: JSON.stringify({ action: "setPassword", usuario: tempUserForPassword, password: p1 })
+                });
+                const result = await response.json();
+
+                if (result.status === "success") {
+                    sessionStorage.setItem("sare_user", result.usuario);
+                    sessionStorage.setItem("sare_name", result.nombre);
+                    sessionStorage.setItem("sare_nivel", result.nivel || "3");
+                    document.getElementById("first-login-container").classList.add("hidden");
+                    showDashboard(result.usuario, result.nombre, result.nivel || "3");
+                } else {
+                    passError.textContent = result.message || "Error al guardar contraseña.";
+                    passError.classList.remove("hidden");
+                }
+            } catch (err) {
+                passError.textContent = "Error de conexión con el servidor.";
+                passError.classList.add("hidden");
+            }
         }
 
-        function limpiarTodo() {
-            document.getElementById('curpInput').value = '';
-            document.getElementById('nombreInput').value = '';
-            ocultarResultados();
-            detenerEscanner();
-            document.getElementById('curpInput').focus();
+        function showDashboard(usuario, nombre, nivel) {
+            document.getElementById("login-container").classList.add("hidden");
+            document.getElementById("first-login-container").classList.add("hidden");
+            document.getElementById("dashboard-container").classList.remove("hidden");
+            document.getElementById("header-user-info").classList.remove("hidden");
+            document.getElementById("header-user-info").classList.add("flex");
+            document.getElementById("user-display").textContent = `Folio: ${usuario}`;
+            document.getElementById("greeting-title").textContent = `Bienvenido, ${nombre}`;
+        }
+
+        function handleLogout() {
+            sessionStorage.clear();
+            window.location.reload();
         }
     </script>
 </body>
