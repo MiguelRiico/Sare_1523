@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Captura de Expedientes - SARE 1523</title>
+    <!-- Google Fonts & Tailwind CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Librería para escanear QR -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <style>
+        body { font-family: 'Public Sans', sans-serif; background-color: #f8fafc; }
+        .bg-gob-primary { background-color: #691C32; }
+        .text-gob-primary { color: #691C32; }
+        .border-gob-primary { border-color: #691C32; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+    <!-- HEADER INSTITUCIONAL -->
+    <header class="bg-gob-primary text-white shadow-md">
+        <div class="max-w-md mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <div class="bg-white text-gob-primary font-bold px-2 py-1 text-[10px] rounded shadow">
+                    GOB. MÉXICO
+                </div>
+                <div>
+                    <h1 class="text-sm font-semibold leading-tight">Módulo 5: Captura de Expedientes</h1>
+                </div>
+            </div>
+            <div>
+                <a href="index.html" class="bg-amber-500 hover:bg-amber-600 text-white font-medium text-xs px-3 py-1.5 rounded shadow transition">
+                    &larr; Menú Principal
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="max-w-md w-full mx-auto p-4 flex-grow space-y-4">
+
+        <!-- INFO DE USUARIO LOGUEADO -->
+        <div class="bg-white rounded-xl shadow-sm p-3 border-l-4 border-gob-primary flex justify-between items-center text-xs">
+            <div>
+                <span class="text-gray-500 block">Usuario Activo:</span>
+                <span id="session-user-display" class="font-mono font-bold text-gray-800">Cargando...</span>
+            </div>
+            <button onclick="window.location.href='index.html'" class="text-gob-primary underline font-medium">Cambiar / Salir</button>
+        </div>
+
+        <!-- PASO 1: ESCANEAR O INGRESAR CURP -->
+        <div id="step-curp" class="bg-white rounded-xl shadow-md p-5 border border-gray-200">
+            <h2 class="text-base font-bold text-gray-800 mb-2">1. Identificación del Estudiante</h2>
+            <p class="text-xs text-gray-500 mb-4">Escanee el código QR del alumno o ingrese el CURP manualmente.</p>
+            
+            <div class="mb-4">
+                <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">CURP del Estudiante</label>
+                <div class="flex gap-2">
+                    <input type="text" id="curp-input" placeholder="Ej. AAAA000000HDFRRC00" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg uppercase tracking-wider font-mono text-sm focus:ring-2 focus:ring-[#691C32] focus:outline-none">
+                    <button onclick="confirmarCurpManual()" class="bg-[#691C32] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#5b1328] transition">OK</button>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-100 pt-3">
+                <p class="text-xs text-gray-500 mb-2 text-center">O use la cámara para escanear el QR:</p>
+                <div id="reader" class="w-full rounded-lg overflow-hidden border border-gray-200"></div>
+                <button id="start-scan-btn" onclick="iniciarEscaner()" class="mt-3 w-full bg-gray-800 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-gray-900 transition">
+                    Activar Cámara QR
+                </button>
+            </div>
+        </div>
+
+        <!-- PASO 2: BOTONES DE CAPTURA (Oculto hasta tener CURP) -->
+        <div id="step-capture" class="hidden space-y-4">
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 flex justify-between items-center">
+                <div>
+                    <span class="text-[10px] text-amber-800 font-bold uppercase block">CURP del Estudiante Activo</span>
+                    <span id="display-curp" class="font-mono font-bold text-amber-900 text-sm"></span>
+                </div>
+                <button onclick="cambiarCurp()" class="text-xs text-amber-800 underline font-medium">Cambiar CURP</button>
+            </div>
+
+            <h2 class="text-xs font-bold uppercase tracking-wider text-gray-500">Documentos Requeridos (5 Fotos)</h2>
+            
+            <!-- 5 Botones -->
+            <div class="space-y-2.5">
+                <button onclick="capturarFoto('01_contrato')" id="btn-01_contrato" 
+                    class="w-full py-3 px-4 rounded-xl text-white font-medium bg-red-500 hover:bg-red-600 shadow-sm transition flex justify-between items-center text-sm">
+                    <span>1. Contrato</span>
+                    <span id="status-01_contrato" class="text-xs bg-red-700 px-2 py-0.5 rounded">Pendiente</span>
+                </button>
+
+                <button onclick="capturarFoto('02_curp')" id="btn-02_curp" 
+                    class="w-full py-3 px-4 rounded-xl text-white font-medium bg-red-500 hover:bg-red-600 shadow-sm transition flex justify-between items-center text-sm">
+                    <span>2. CURP</span>
+                    <span id="status-02_curp" class="text-xs bg-red-700 px-2 py-0.5 rounded">Pendiente</span>
+                </button>
+
+                <button onclick="capturarFoto('03_identificacion_anverso')" id="btn-03_identificacion_anverso" 
+                    class="w-full py-3 px-4 rounded-xl text-white font-medium bg-red-500 hover:bg-red-600 shadow-sm transition flex justify-between items-center text-sm">
+                    <span>3. Identificación Anverso</span>
+                    <span id="status-03_identificacion_anverso" class="text-xs bg-red-700 px-2 py-0.5 rounded">Pendiente</span>
+                </button>
+
+                <button onclick="capturarFoto('04_identificacion_reverso')" id="btn-04_identificacion_reverso" 
+                    class="w-full py-3 px-4 rounded-xl text-white font-medium bg-red-500 hover:bg-red-600 shadow-sm transition flex justify-between items-center text-sm">
+                    <span>4. Identificación Reverso</span>
+                    <span id="status-04_identificacion_reverso" class="text-xs bg-red-700 px-2 py-0.5 rounded">Pendiente</span>
+                </button>
+
+                <button onclick="capturarFoto('05_foto_recepcion')" id="btn-05_foto_recepcion" 
+                    class="w-full py-3 px-4 rounded-xl text-white font-medium bg-red-500 hover:bg-red-600 shadow-sm transition flex justify-between items-center text-sm">
+                    <span>5. Foto de Recepción</span>
+                    <span id="status-05_foto_recepcion" class="text-xs bg-red-700 px-2 py-0.5 rounded">Pendiente</span>
+                </button>
+            </div>
+
+            <!-- Botón de Envío a Google Drive -->
+            <button onclick="subirAGoogleDrive()" id="btn-upload" disabled
+                class="w-full py-3.5 rounded-xl text-white font-semibold bg-gray-300 cursor-not-allowed shadow transition mt-2">
+                ☁️ Guardar en Google Drive
+            </button>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 py-3 text-center text-[11px] text-gray-500">
+        SARE 1523 • Región Tultitlán &copy; 2026
+    </footer>
+
+    <!-- Input oculto para activar la cámara de fotos -->
+    <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" onchange="procesarFotoCapturada(event)">
+
+    <script>
+        // PEGA AQUÍ LA URL DE TU APLICACIÓN WEB DE GOOGLE APPS SCRIPT
+        const WEB_APP_URL = "AQUÍ_PEGA_TU_URL_DE_WEB_APP_DE_APPS_SCRIPT";
+
+        let curpActual = "";
+        let html5QrCode = null;
+        let usuarioActual = "";
+        
+        let expedienteFotos = {
+            "01_contrato": null,
+            "02_curp": null,
+            "03_identificacion_anverso": null,
+            "04_identificacion_reverso": null,
+            "05_foto_recepcion": null
+        };
+        let tipoActualCaptura = "";
+
+        window.addEventListener("DOMContentLoaded", () => {
+            usuarioActual = sessionStorage.getItem("sare_user") || "Invitado";
+            document.getElementById("session-user-display").textContent = `Folio: ${usuarioActual}`;
+        });
+
+        function iniciarEscaner() {
+            const scanBtn = document.getElementById('start-scan-btn');
+            scanBtn.classList.add('hidden');
+            
+            html5QrCode = new Html5Qrcode("reader");
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 220, height: 220 } },
+                (decodedText) => {
+                    curpActual = decodedText.trim().toUpperCase();
+                    html5QrCode.stop().then(() => {
+                        activarPanelCaptura();
+                    }).catch(err => console.error(err));
+                },
+                (errorMessage) => {}
+            ).catch(err => {
+                alert("No se pudo acceder a la cámara. Revisa los permisos.");
+                scanBtn.classList.remove('hidden');
+            });
+        }
+
+        function confirmarCurpManual() {
+            const input = document.getElementById('curp-input').value.trim().toUpperCase();
+            if (input.length < 10) {
+                alert("Por favor ingresa un CURP válido.");
+                return;
+            }
+            curpActual = input;
+            if (html5QrCode) { html5QrCode.stop().catch(() => {}); }
+            activarPanelCaptura();
+        }
+
+        function activarPanelCaptura() {
+            document.getElementById('step-curp').classList.add('hidden');
+            document.getElementById('step-capture').classList.remove('hidden');
+            document.getElementById('display-curp').innerText = curpActual;
+        }
+
+        function cambiarCurp() {
+            if (confirm("¿Deseas cambiar el CURP? Se perderán las fotos no guardadas.")) {
+                curpActual = "";
+                expedienteFotos = { "01_contrato": null, "02_curp": null, "03_identificacion_anverso": null, "04_identificacion_reverso": null, "05_foto_recepcion": null };
+                reiniciarBotonesUI();
+                document.getElementById('step-capture').classList.add('hidden');
+                document.getElementById('step-curp').classList.remove('hidden');
+                document.getElementById('curp-input').value = "";
+            }
+        }
+
+        function capturarFoto(tipo) {
+            tipoActualCaptura = tipo;
+            document.getElementById('camera-input').click();
+        }
+
+        function procesarFotoCapturada(event) {
+            const file = event.target.files[0];
+            if (file && tipoActualCaptura) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    expedienteFotos[tipoActualCaptura] = e.target.result;
+                    actualizarBotonVerde(tipoActualCaptura);
+                    verificarProgresoCompleto();
+                };
+                reader.readAsDataURL(file);
+            }
+            event.target.value = "";
+        }
+
+        function actualizarBotonVerde(tipo) {
+            const btn = document.getElementById(`btn-${tipo}`);
+            const status = document.getElementById(`status-${tipo}`);
+            btn.classList.remove('bg-red-500', 'hover:bg-red-600');
+            btn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+            status.classList.remove('bg-red-700');
+            status.classList.add('bg-emerald-800');
+            status.innerText = "✓ Capturada";
+        }
+
+        function reiniciarBotonesUI() {
+            const tipos = ['01_contrato', '02_curp', '03_identificacion_anverso', '04_identificacion_reverso', '05_foto_recepcion'];
+            tipos.forEach(tipo => {
+                const btn = document.getElementById(`btn-${tipo}`);
+                const status = document.getElementById(`status-${tipo}`);
+                btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+                btn.classList.add('bg-red-500', 'hover:bg-red-600');
+                status.classList.remove('bg-emerald-800');
+                status.classList.add('bg-red-700');
+                status.innerText = "Pendiente";
+            });
+            const dlBtn = document.getElementById('btn-upload');
+            dlBtn.classList.remove('bg-[#691C32]', 'hover:bg-[#5b1328]', 'cursor-pointer');
+            dlBtn.classList.add('bg-gray-300', 'cursor-not-allowed');
+            dlBtn.disabled = true;
+        }
+
+        function verificarProgresoCompleto() {
+            const totalTomadas = Object.values(expedienteFotos).filter(f => f !== null).length;
+            if (totalTomadas > 0) {
+                const dlBtn = document.getElementById('btn-upload');
+                dlBtn.classList.remove('bg-gray-300', 'cursor-not-allowed');
+                dlBtn.classList.add('bg-[#691C32]', 'hover:bg-[#5b1328]', 'cursor-pointer');
+                dlBtn.disabled = false;
+            }
+        }
+
+        async function subirAGoogleDrive() {
+            const btnUpload = document.getElementById('btn-upload');
+            btnUpload.disabled = true;
+            btnUpload.innerText = "Subiendo a Google Drive...";
+
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({
+                        action: "guardarExpediente",
+                        usuario: usuarioActual,
+                        curp: curpActual,
+                        fotos: expedienteFotos
+                    })
+                });
+
+                alert(`¡Expediente del CURP ${curpActual} guardado exitosamente en Google Drive (Carpeta: ${usuarioActual})!`);
+                location.reload(); 
+
+            } catch (error) {
+                console.error(error);
+                alert("Hubo un error al conectar con Google Drive.");
+                btnUpload.disabled = false;
+                btnUpload.innerText = "☁️ Guardar en Google Drive";
+            }
+        }
+    </script>
+</body>
+</html>
